@@ -58,7 +58,7 @@ export function UserProfileDialog({ isOpen, onClose }: UserProfileDialogProps) {
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-xl sm:w-96 animate-in zoom-in-95 duration-200">
         
         {/* Header Ribbon */}
-        <div className="h-24 bg-gradient-to-r from-primary to-primary-hover" />
+        <div className="h-24 bg-linear-to-r from-primary to-primary-hover" />
         
         {/* Close Button */}
         <button 

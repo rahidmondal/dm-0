@@ -1,0 +1,54 @@
+"use client";
+
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useState, useRef } from "react";
+import { SendHorizonal } from "lucide-react";
+
+export function ChatInput({ conversationId }: { conversationId: Id<"conversations"> }) {
+  const [content, setContent] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const sendMessage = useMutation(api.messages.sendMessage);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSend = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const trimmed = content.trim();
+    if (!trimmed || isSending) return;
+
+    setIsSending(true);
+    try {
+      await sendMessage({ conversationId, content: trimmed });
+      setContent("");
+      inputRef.current?.focus();
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <div className="border-t border-border bg-card p-4">
+      <form onSubmit={handleSend} className="mx-auto flex w-full max-w-4xl items-center gap-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Type a message..."
+          className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+          disabled={isSending}
+        />
+        <button
+          type="submit"
+          disabled={!content.trim() || isSending}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50"
+        >
+          <SendHorizonal className="h-5 w-5" />
+        </button>
+      </form>
+    </div>
+  );
+}

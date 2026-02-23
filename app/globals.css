@@ -8,29 +8,99 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
+  --color-card: var(--card);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Charcoal Brown */
+  --color-charcoal-brown-50: #f2f3f1;
+  --color-charcoal-brown-100: #e5e7e4;
+  --color-charcoal-brown-200: #ccd0c8;
+  --color-charcoal-brown-300: #b2b8ad;
+  --color-charcoal-brown-400: #98a092;
+  --color-charcoal-brown-500: #7f8877;
+  --color-charcoal-brown-600: #656d5f;
+  --color-charcoal-brown-700: #4c5247;
+  --color-charcoal-brown-800: #33372f;
+  --color-charcoal-brown-900: #191b18;
+  --color-charcoal-brown-950: #121311;
+
+  /* Soft Periwinkle */
+  --color-soft-periwinkle-50: #ece8fc;
+  --color-soft-periwinkle-100: #d8d2f9;
+  --color-soft-periwinkle-200: #b1a4f4;
+  --color-soft-periwinkle-300: #8b77ee;
+  --color-soft-periwinkle-400: #6449e9;
+  --color-soft-periwinkle-500: #3d1ce3;
+  --color-soft-periwinkle-600: #3116b6;
+  --color-soft-periwinkle-700: #251188;
+  --color-soft-periwinkle-800: #180b5b;
+  --color-soft-periwinkle-900: #0c062d;
+  --color-soft-periwinkle-950: #090420;
+
+  /* Periwinkle */
+  --color-periwinkle-50: #e8effd;
+  --color-periwinkle-100: #d1dffa;
+  --color-periwinkle-200: #a2bef6;
+  --color-periwinkle-300: #749ef1;
+  --color-periwinkle-400: #457ded;
+  --color-periwinkle-500: #175de8;
+  --color-periwinkle-600: #124aba;
+  --color-periwinkle-700: #0e388b;
+  --color-periwinkle-800: #09255d;
+  --color-periwinkle-900: #05132e;
+  --color-periwinkle-950: #030d20;
+
+  /* Aquamarine */
+  --color-aquamarine-50: #e8fcf7;
+  --color-aquamarine-100: #d2f9ef;
+  --color-aquamarine-200: #a4f4df;
+  --color-aquamarine-300: #77eece;
+  --color-aquamarine-400: #49e9be;
+  --color-aquamarine-500: #1ce3ae;
+  --color-aquamarine-600: #16b68b;
+  --color-aquamarine-700: #118868;
+  --color-aquamarine-800: #0b5b46;
+  --color-aquamarine-900: #062d23;
+  --color-aquamarine-950: #042018;
+
+  /* Tropical Mint */
+  --color-tropical-mint-50: #e6fff7;
+  --color-tropical-mint-100: #ccfff0;
+  --color-tropical-mint-200: #9afee0;
+  --color-tropical-mint-300: #67fed1;
+  --color-tropical-mint-400: #34fec1;
+  --color-tropical-mint-500: #01feb2;
+  --color-tropical-mint-600: #01cb8e;
+  --color-tropical-mint-700: #01986b;
+  --color-tropical-mint-800: #016547;
+  --color-tropical-mint-900: #003324;
+  --color-tropical-mint-950: #002419;
 }
 
 @layer base {
   :root {
-    --background: #fdfcff;
-    --foreground: #0f172a;
-    --primary: #8b5cf6; /* Violet 500 */
-    --primary-hover: #7c3aed; /* Violet 600 */
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    --border: #e2e8f0;
+    /* Base theme mapped to newly defined user tokens (Light Mode) */
+    --background: var(--color-charcoal-brown-50);
+    --foreground: var(--color-charcoal-brown-950);
+    --primary: var(--color-tropical-mint-600);
+    --primary-hover: var(--color-tropical-mint-500);
+    --muted: var(--color-charcoal-brown-100);
+    --muted-foreground: var(--color-charcoal-brown-600);
+    --border: var(--color-charcoal-brown-200);
+    --card: #ffffff;
   }
 
   .dark {
-    --background: #0f172a; /* Slate 900 */
-    --foreground: #f8fafc;
-    --primary: #a78bfa; /* Violet 400 */
-    --primary-hover: #c4b5fd; /* Violet 300 */
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --border: #334155;
+    /* Dark Mode mapping */
+    --background: var(--color-charcoal-brown-950);
+    --foreground: var(--color-charcoal-brown-50);
+    --primary: var(--color-aquamarine-500);
+    --primary-hover: var(--color-aquamarine-400);
+    --muted: var(--color-charcoal-brown-900);
+    --muted-foreground: var(--color-charcoal-brown-400);
+    --border: var(--color-charcoal-brown-800);
+    --card: var(--color-charcoal-brown-900);
   }
 }
 

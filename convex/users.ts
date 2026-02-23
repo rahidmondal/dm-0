@@ -1,4 +1,4 @@
-import { mutation } from './_generated/server';
+import { mutation, query } from './_generated/server';
 
 export const syncUser = mutation({
   args: {},
@@ -36,5 +36,21 @@ export const syncUser = mutation({
       email: identity.email ?? '',
       avatarUrl: identity.pictureUrl,
     });
+  },
+});
+
+export const getUsers = query({
+  args: {},
+  handler: async ctx => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error('Unauthenticated');
+    }
+
+    // Get all users
+    const users = await ctx.db.query('users').collect();
+
+    // Filter out the current user
+    return users.filter(user => user.clerkId !== identity.subject);
   },
 });

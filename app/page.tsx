@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Authenticated, Unauthenticated } from 'convex/react';
 import { SignUpButton, SignInButton, UserButton } from '@clerk/nextjs';
 import Image from 'next/image';
@@ -32,18 +34,8 @@ export default function Home() {
       
       <main className="flex flex-1 flex-col items-center justify-center p-6">
         <Authenticated>
-          <div className="flex max-w-2xl flex-col items-center gap-6 text-center animate-in fade-in zoom-in duration-500">
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-              Welcome back to <span className="text-primary">dm-0</span>
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              You are successfully authenticated. 
-              Real-time messaging, direct conversations, and presence tracking features are coming soon.
-            </p>
-            <div className="rounded-xl border border-border bg-muted/50 p-6 shadow-sm">
-                <p className="font-mono text-sm">Phase 2: Authentication Verified &nbsp; ✅</p>
-            </div>
-          </div>
+          {/* We use an effect in a component block to automatically push the user to the chat layout */}
+          <AuthRedirect />
         </Authenticated>
         
         <Unauthenticated>
@@ -71,6 +63,28 @@ export default function Home() {
           </div>
         </Unauthenticated>
       </main>
+    </div>
+  );
+}
+
+function AuthRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Small delay to ensure sync process has started before mounting chat UI
+    const timer = setTimeout(() => {
+        router.push('/chat');
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [router]);
+
+  return (
+    <div className="flex max-w-2xl flex-col items-center gap-6 text-center animate-in fade-in zoom-in duration-500">
+      <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <p className="text-lg text-muted-foreground">
+        Entering the chat...
+      </p>
     </div>
   );
 }

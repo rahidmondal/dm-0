@@ -218,3 +218,52 @@ export const markRead = mutation({
     await ctx.db.patch(membership._id, { lastReadMessageId: args.messageId });
   },
 });
+
+export const createGroup = mutation({
+  args: {
+    name: v.string(),
+    memberIds: v.array(v.id('users')),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Unauthenticated');
+
+    const currentUser = await ctx.db
+      .query('users')
+      .withIndex('by_clerkId', q => q.eq('clerkId', identity.subject))
+      .unique();
+
+    if (!currentUser) throw new Error('User not found');
+
+    if (args.memberIds.length < 1) {
+      throw new Error('Group must have at least one other member');
+    }
+
+    // Create the group conversation
+    const conversationId = await ctx.db.insert('conversations', {
+      isGroup: true,
+      name: args.name,
+      updatedAt: Date.now(),
+      // directKey is omitted for groups
+    });
+
+    // Add the creator
+    await ctx.db.insert('members', {
+      conversationId,
+      userId: currentUser._id,
+    });
+
+    // Add all selected members
+    for (const memberId of args.memberIds) {
+      // Prevent adding the creator twice if they somehow included their own ID
+      if (memberId !== currentUser._id) {
+        await ctx.db.insert('members', {
+          conversationId,
+          userId: memberId,
+        });
+      }
+    }
+
+    return conversationId;
+  },
+});

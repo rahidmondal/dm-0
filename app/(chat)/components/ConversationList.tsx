@@ -15,10 +15,17 @@ export function ConversationList() {
 
   if (conversations === undefined) {
     return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground animate-pulse">Loading chats...</p>
+      <div className="flex-1 overflow-hidden p-2">
+        <div className="flex flex-col gap-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3 rounded-lg p-3">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted animate-pulse"></div>
+              <div className="flex flex-1 flex-col gap-2">
+                <div className="h-4 w-24 rounded bg-muted animate-pulse"></div>
+                <div className="h-3 w-40 rounded bg-muted animate-pulse"></div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );

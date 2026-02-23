@@ -7,10 +7,11 @@ import Image from "next/image";
 import { ChatInput } from "./ChatInput";
 import { formatMessageTime } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { OnlineIndicator } from "./OnlineIndicator";
 import { TypingIndicator } from "./TypingIndicator";
+import { ReactionsPopover } from "./ReactionsPopover";
 
 export function ChatUI({ conversationId }: { conversationId: Id<"conversations"> }) {
   const router = useRouter();
@@ -34,6 +35,8 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
   );
 
   const markRead = useMutation(api.conversations.markRead);
+  const deleteMessage = useMutation(api.messages.deleteMessage);
+  const toggleReaction = useMutation(api.messages.toggleReaction);
 
   // Auto-scroll to bottom on new messages and mark read
   useEffect(() => {
@@ -74,8 +77,26 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
 
   if (conversation === undefined || currentUser === undefined) {
     return (
-      <div className="flex h-full flex-1 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-full flex-1 flex-col overflow-hidden bg-background">
+        {/* Skeleton Header */}
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-card/80 px-4">
+          <div className="h-10 w-10 shrink-0 rounded-full bg-muted animate-pulse"></div>
+          <div className="flex flex-col gap-2">
+            <div className="h-4 w-32 rounded-md bg-muted animate-pulse"></div>
+            <div className="h-3 w-20 rounded-md bg-muted animate-pulse"></div>
+          </div>
+        </div>
+        
+        {/* Skeleton Messages Area */}
+        <div className="flex-1 overflow-y-hidden p-4 sm:p-6 opacity-60">
+          <div className="mx-auto flex max-w-4xl flex-col gap-6 w-full">
+            <div className="self-start h-16 w-64 rounded-2xl rounded-bl-sm bg-muted animate-pulse"></div>
+            <div className="self-start h-10 w-48 rounded-2xl rounded-bl-sm bg-muted animate-pulse"></div>
+            <div className="self-end h-12 w-64 rounded-2xl rounded-br-sm bg-primary/20 animate-pulse"></div>
+            <div className="self-start h-20 w-72 rounded-2xl rounded-bl-sm bg-muted animate-pulse"></div>
+            <div className="self-end h-10 w-40 rounded-2xl rounded-br-sm bg-primary/20 animate-pulse"></div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -157,20 +178,76 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
           ) : (
              messages.map((msg) => {
                const isMe = msg.senderId === currentUser._id;
+               
+               if (msg.isDeleted) {
+                 return (
+                   <div key={msg._id} className={`flex max-w-[80%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}>
+                     <div className="rounded-2xl px-4 py-2 text-[15px] border border-border bg-transparent text-muted-foreground italic">
+                       This message was deleted
+                     </div>
+                     <span className="px-1 text-[10px] text-muted-foreground font-medium">
+                       {formatMessageTime(msg._creationTime)}
+                     </span>
+                   </div>
+                 );
+               }
+
                return (
                  <div
                    key={msg._id}
-                   className={`flex max-w-[80%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}
+                   className={`group flex max-w-[80%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}
                  >
-                   <div 
-                     className={`rounded-2xl px-4 py-2 text-[15px] ${
-                       isMe 
-                         ? "bg-primary text-primary-foreground rounded-br-sm" 
-                         : "bg-muted text-foreground rounded-bl-sm"
-                     }`}
-                   >
-                     {msg.content}
+                   <div className={`flex items-center gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+                     <div 
+                       className={`rounded-2xl px-4 py-2 text-[15px] ${
+                         isMe 
+                           ? "bg-primary text-primary-foreground rounded-br-sm" 
+                           : "bg-muted text-foreground rounded-bl-sm"
+                       }`}
+                     >
+                       {msg.content}
+                     </div>
+                     
+                     {/* Delete Button (Only visible on hover for own messages) */}
+                     {isMe && (
+                       <button
+                         onClick={() => deleteMessage({ messageId: msg._id as Id<"messages"> })}
+                         className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+                         title="Delete message"
+                       >
+                         <Trash2 className="h-4 w-4" />
+                       </button>
+                     )}
+                     
+                     {/* React Button */}
+                     <span className={isMe ? "" : "order-first"}>
+                       <ReactionsPopover messageId={msg._id as Id<"messages">} reactions={msg.reactions || []} />
+                     </span>
                    </div>
+                   
+                   {/* Render Active Reactions */}
+                   {msg.reactions && msg.reactions.length > 0 && (
+                     <div className={`flex flex-wrap gap-1 ${isMe ? "justify-end" : "justify-start"}`}>
+                       {msg.reactions.map(({ emoji, count, userIds }) => {
+                         const hasReacted = currentUser && userIds.includes(currentUser._id);
+                         return (
+                           <button
+                             key={emoji}
+                             onClick={() => toggleReaction({ messageId: msg._id as Id<"messages">, emoji }).catch(console.error)}
+                             className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-medium transition-colors ${
+                               hasReacted 
+                                 ? "bg-primary/20 text-primary border border-primary/30" 
+                                 : "bg-muted/50 text-muted-foreground border border-border hover:bg-muted"
+                             }`}
+                           >
+                             <span>{emoji}</span>
+                             <span>{count}</span>
+                           </button>
+                         );
+                       })}
+                     </div>
+                   )}
+                   
                    <span className="px-1 text-[10px] text-muted-foreground font-medium">
                      {formatMessageTime(msg._creationTime)}
                    </span>

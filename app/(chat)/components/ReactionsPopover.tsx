@@ -1,0 +1,82 @@
+"use client";
+
+import React, { useState } from "react";
+import { Smile } from "lucide-react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+
+const EMOJI_OPTIONS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "🎉", "👀", "🙌", "💯"];
+
+interface ReactionsPopoverProps {
+  messageId: Id<"messages">;
+  reactions: Array<{ emoji: string; count: number; userIds: Id<"users">[] }>;
+}
+
+export function ReactionsPopover({ messageId, reactions }: ReactionsPopoverProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleReaction = useMutation(api.messages.toggleReaction);
+  const currentUser = useQuery(api.auth.current);
+
+  const handleSelect = (emoji: string) => {
+    setIsOpen(false);
+    toggleReaction({ messageId, emoji }).catch(console.error);
+  };
+
+  // Close when clicking outside or pressing Escape
+  const popoverRef = React.useRef<HTMLDivElement>(null);
+  
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEsc);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="relative" ref={popoverRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full"
+        title="Add reaction"
+      >
+        <Smile className="h-4 w-4" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex flex-wrap items-center justify-center w-[200px] gap-1 rounded-2xl bg-background border border-border p-2 shadow-xl animate-in fade-in zoom-in-95 duration-200 z-50">
+          {EMOJI_OPTIONS.map((emoji) => {
+            const reactionData = reactions?.find((r) => r.emoji === emoji);
+            const hasReacted = currentUser && reactionData?.userIds.includes(currentUser._id);
+            return (
+              <button
+                key={emoji}
+                onClick={() => handleSelect(emoji)}
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-lg transition-transform hover:scale-125 ${
+                  hasReacted ? "bg-primary/20" : "hover:bg-muted"
+                }`}
+              >
+                {emoji}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

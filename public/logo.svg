@@ -1,0 +1,47 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <linearGradient id="dm0grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="256" cy="256" r="170"
+          fill="none"
+          stroke="url(#dm0grad)"
+          stroke-width="36"
+          stroke-linecap="round"/>
+
+  <g transform="translate(256 110)">
+    <rect x="-45" y="-25" rx="18" ry="18" width="90" height="50" fill="white"/>
+    <polygon points="-10,25 0,45 10,25" fill="white"/>
+  </g>
+
+  <g transform="translate(396 256) rotate(90)">
+    <rect x="-45" y="-25" rx="18" ry="18" width="90" height="50" fill="white"/>
+    <polygon points="-10,25 0,45 10,25" fill="white"/>
+  </g>
+
+  <g transform="translate(256 402) rotate(180)">
+    <rect x="-45" y="-25" rx="18" ry="18" width="90" height="50" fill="white"/>
+    <polygon points="-10,25 0,45 10,25" fill="white"/>
+  </g>
+
+  <g transform="translate(116 256) rotate(270)">
+    <rect x="-45" y="-25" rx="18" ry="18" width="90" height="50" fill="white"/>
+    <polygon points="-10,25 0,45 10,25" fill="white"/>
+  </g>
+
+  <text x="50%" y="52%"
+        dominant-baseline="middle"
+        text-anchor="middle"
+        font-family="Inter, Arial, Helvetica, sans-serif"
+        font-size="72"
+        font-weight="700"
+        fill="url(#dm0grad)"
+        letter-spacing="6">
+    DM
+  </text>
+
+</svg>

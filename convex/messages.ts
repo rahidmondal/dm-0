@@ -69,7 +69,7 @@ export const getMessages = query({
       .unique();
 
     if (!membership) {
-      throw new Error('Not a member of this conversation');
+      return { page: [], isDone: true, continueCursor: '' };
     }
 
     const messages = await ctx.db

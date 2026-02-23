@@ -77,14 +77,18 @@ export const getMyConversations = query({
         const conversation = await ctx.db.get(membership.conversationId);
         if (!conversation) return null;
 
-        // Since it's a 1-on-1, find the other member
-        const otherMember = await ctx.db
+        // Fetch the active members of this conversation
+        const activeMembers = await ctx.db
           .query('members')
           .withIndex('by_conversationId', q => q.eq('conversationId', conversation._id))
-          .filter(q => q.neq(q.field('userId'), currentUser._id))
-          .first();
+          .collect();
 
-        const otherUser = otherMember ? await ctx.db.get(otherMember.userId) : null;
+        // If it's a 1-on-1, find the other member
+        let otherUser = null;
+        if (!conversation.isGroup) {
+          const otherMember = activeMembers.find(m => m.userId !== currentUser._id);
+          otherUser = otherMember ? await ctx.db.get(otherMember.userId) : null;
+        }
 
         // Get preview of last message
         const lastMessage = conversation.lastMessageId ? await ctx.db.get(conversation.lastMessageId) : null;
@@ -112,6 +116,10 @@ export const getMyConversations = query({
 
         return {
           _id: conversation._id,
+          isGroup: conversation.isGroup,
+          name: conversation.name,
+          avatarUrl: conversation.avatarUrl,
+          memberCount: activeMembers.length,
           updatedAt: conversation.updatedAt,
           otherUser,
           lastMessage,
@@ -149,19 +157,41 @@ export const getConversation = query({
 
     if (!membership) return null;
 
-    const otherMember = await ctx.db
+    const activeMembers = await ctx.db
       .query('members')
       .withIndex('by_conversationId', q => q.eq('conversationId', conversation._id))
-      .filter(q => q.neq(q.field('userId'), currentUser._id))
-      .first();
+      .collect();
 
-    const otherUser = otherMember ? await ctx.db.get(otherMember.userId) : null;
+    let otherUser = null;
+    let otherMember = null;
+    let groupMembers = null;
+
+    if (!conversation.isGroup) {
+      otherMember = activeMembers.find(m => m.userId !== currentUser._id) || null;
+      otherUser = otherMember ? await ctx.db.get(otherMember.userId) : null;
+    } else {
+      // For groups, map out all members to return their details
+      groupMembers = await Promise.all(
+        activeMembers.map(async m => {
+          const user = await ctx.db.get(m.userId);
+          return {
+            _id: user?._id,
+            name: user?.name,
+            avatarUrl: user?.avatarUrl,
+            typingUntil: m.typingUntil,
+          };
+        }),
+      );
+    }
 
     return {
       _id: conversation._id,
       isGroup: conversation.isGroup,
+      name: conversation.name,
+      avatarUrl: conversation.avatarUrl,
       otherUser,
       otherMember: otherMember ? { typingUntil: otherMember.typingUntil } : null,
+      groupMembers,
     };
   },
 });
@@ -265,5 +295,108 @@ export const createGroup = mutation({
     }
 
     return conversationId;
+  },
+});
+
+export const deleteGroup = mutation({
+  args: { conversationId: v.id('conversations') },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Unauthenticated');
+
+    const currentUser = await ctx.db
+      .query('users')
+      .withIndex('by_clerkId', q => q.eq('clerkId', identity.subject))
+      .unique();
+
+    if (!currentUser) throw new Error('User not found');
+
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || !conversation.isGroup) {
+      throw new Error('Group not found');
+    }
+
+    // Verify current user is a member of the group
+    const membership = await ctx.db
+      .query('members')
+      .withIndex('by_userId_and_conversationId', q =>
+        q.eq('userId', currentUser._id).eq('conversationId', args.conversationId),
+      )
+      .unique();
+
+    if (!membership) {
+      throw new Error('Unauthorized');
+    }
+
+    // 1. Delete all messages
+    const messages = await ctx.db
+      .query('messages')
+      .withIndex('by_conversationId', q => q.eq('conversationId', args.conversationId))
+      .collect();
+
+    for (const msg of messages) {
+      await ctx.db.delete(msg._id);
+    }
+
+    // 2. Delete all memberships
+    const activeMembers = await ctx.db
+      .query('members')
+      .withIndex('by_conversationId', q => q.eq('conversationId', args.conversationId))
+      .collect();
+
+    for (const member of activeMembers) {
+      await ctx.db.delete(member._id);
+    }
+
+    // 3. Delete the conversation itself
+    await ctx.db.delete(args.conversationId);
+  },
+});
+
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async ctx => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Unauthenticated');
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+export const updateGroupAvatar = mutation({
+  args: {
+    conversationId: v.id('conversations'),
+    storageId: v.id('_storage'),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Unauthenticated');
+
+    const currentUser = await ctx.db
+      .query('users')
+      .withIndex('by_clerkId', q => q.eq('clerkId', identity.subject))
+      .unique();
+
+    if (!currentUser) throw new Error('User not found');
+
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || !conversation.isGroup) {
+      throw new Error('Group not found');
+    }
+
+    const membership = await ctx.db
+      .query('members')
+      .withIndex('by_userId_and_conversationId', q =>
+        q.eq('userId', currentUser._id).eq('conversationId', args.conversationId),
+      )
+      .unique();
+
+    if (!membership) {
+      throw new Error('Unauthorized');
+    }
+
+    const avatarUrl = await ctx.storage.getUrl(args.storageId);
+    if (!avatarUrl) throw new Error('Failed to get URL for storage ID');
+
+    await ctx.db.patch(args.conversationId, { avatarUrl });
   },
 });

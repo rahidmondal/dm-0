@@ -24,6 +24,7 @@ export default defineSchema({
   conversations: defineTable({
     isGroup: v.boolean(),
     name: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
     directKey: v.optional(v.string()), // Format: sorted `userIdA_userIdB`
     lastMessageId: v.optional(v.id('messages')),
     updatedAt: v.number(),

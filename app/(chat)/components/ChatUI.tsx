@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { OnlineIndicator } from "./OnlineIndicator";
 import { TypingIndicator } from "./TypingIndicator";
 import { ReactionsPopover } from "./ReactionsPopover";
+import { GroupSettingsModal } from "./GroupSettingsModal";
 
 export function ChatUI({ conversationId }: { conversationId: Id<"conversations"> }) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
   const isAtBottomRef = useRef(true);
   const prevMessagesLength = useRef(0);
   const [showNewBadge, setShowNewBadge] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const conversation = useQuery(api.conversations.getConversation, { conversationId });
   const currentUser = useQuery(api.auth.current);
@@ -75,6 +77,27 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
     }
   };
 
+  // Mobile Long-Press State
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
+  const pressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const handleTouchStart = (msgId: string) => {
+    pressTimer.current = setTimeout(() => {
+      setSelectedMessageId(msgId);
+      // Optional: Add haptic feedback if supported by browser
+      if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+    }, 400); // 400ms long press
+  };
+
+  const handleTouchEnd = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
+
   if (conversation === undefined || currentUser === undefined) {
     return (
       <div className="flex h-full flex-1 flex-col overflow-hidden bg-background">
@@ -124,22 +147,44 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
         
-        <div className="relative h-10 w-10 shrink-0">
-          <div className="relative h-full w-full overflow-hidden rounded-full bg-muted">
-            {conversation.otherUser?.avatarUrl ? (
-              <Image src={conversation.otherUser.avatarUrl} alt={conversation.otherUser.name || "User"} fill className="object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
-                {conversation.otherUser?.name?.charAt(0).toUpperCase() || "U"}
-              </div>
-            )}
+        <div 
+          className={`flex items-center gap-3 ${conversation.isGroup ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+          onClick={() => {
+            if (conversation.isGroup) setIsSettingsOpen(true);
+          }}
+        >
+          <div className="relative h-10 w-10 shrink-0">
+            <div className="relative h-full w-full overflow-hidden rounded-full bg-muted">
+              {conversation.isGroup ? (
+                conversation.avatarUrl ? (
+                  <Image src={conversation.avatarUrl} alt={conversation.name || "Group"} fill className="object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
+                    {conversation.name?.charAt(0).toUpperCase() || "G"}
+                  </div>
+                )
+              ) : conversation.otherUser?.avatarUrl ? (
+                <Image src={conversation.otherUser.avatarUrl} alt={conversation.otherUser.name || "User"} fill className="object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
+                  {conversation.otherUser?.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+              )}
+            </div>
+            {!conversation.isGroup && <OnlineIndicator userId={conversation.otherUser?._id} />}
           </div>
-          <OnlineIndicator userId={conversation.otherUser?._id} />
-        </div>
-        
-        <div className="flex flex-col">
-          <span className="font-semibold text-foreground">{conversation.otherUser?.name || "Unknown User"}</span>
-          <span className="text-xs text-muted-foreground">@{conversation.otherUser?.username || "unknown"}</span>
+          
+          <div className="flex flex-col">
+            <span className="font-semibold text-foreground">
+              {conversation.isGroup ? conversation.name : conversation.otherUser?.name || "Unknown User"}
+            </span>
+            <span className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-md">
+              {conversation.isGroup 
+                ? `${conversation.groupMembers?.length || 0} members`
+                : `@${conversation.otherUser?.username || "unknown"}`
+              }
+            </span>
+          </div>
         </div>
       </div>
 
@@ -147,6 +192,7 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
       <div 
         className="flex-1 overflow-y-auto p-4 sm:p-6"
         onScroll={handleScroll}
+        onClick={() => setSelectedMessageId(null)}
       >
         <div className="mx-auto flex max-w-4xl flex-col gap-4 relative min-h-full justify-end">
           
@@ -176,12 +222,19 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
                 <p className="text-xs text-muted-foreground">Send a message to start the conversation</p>
              </div>
           ) : (
-             messages.map((msg) => {
+             messages.map((msg, index) => {
                const isMe = msg.senderId === currentUser._id;
+               
+               // Check if the previous message was from the same user to avoid redundant sender names
+               const prevMsg = index > 0 ? messages[index - 1] : null;
+               const showSenderName = conversation.isGroup && !isMe && (!prevMsg || prevMsg.senderId !== msg.senderId);
                
                if (msg.isDeleted) {
                  return (
                    <div key={msg._id} className={`flex max-w-[80%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}>
+                     {showSenderName && (
+                       <span className="pl-1 text-xs font-medium text-muted-foreground">{msg.senderName}</span>
+                     )}
                      <div className="rounded-2xl px-4 py-2 text-[15px] border border-border bg-transparent text-muted-foreground italic">
                        This message was deleted
                      </div>
@@ -197,9 +250,25 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
                    key={msg._id}
                    className={`group flex max-w-[80%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}
                  >
-                   <div className={`flex items-center gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+                   {showSenderName && (
+                     <span className="pl-1 text-xs font-medium text-muted-foreground">{msg.senderName}</span>
+                   )}
+                   <div 
+                     className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : "flex-row"} relative`}
+                     onTouchStart={() => handleTouchStart(msg._id as string)}
+                     onTouchEnd={handleTouchEnd}
+                     onTouchCancel={handleTouchEnd}
+                     onClick={(e) => {
+                       // Prevent click from reaching the parent container (which dismissed the actions)
+                       if (selectedMessageId === msg._id) {
+                         e.stopPropagation();
+                       }
+                     }}
+                   >
                      <div 
-                       className={`rounded-2xl px-4 py-2 text-[15px] ${
+                       className={`rounded-2xl px-4 py-2 text-[15px] transition-transform duration-200 ${
+                         selectedMessageId === msg._id ? "scale-[0.98] opacity-90" : ""
+                       } ${
                          isMe 
                            ? "bg-primary text-primary-foreground rounded-br-sm" 
                            : "bg-muted text-foreground rounded-bl-sm"
@@ -208,21 +277,36 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
                        {msg.content}
                      </div>
                      
-                     {/* Delete Button (Only visible on hover for own messages) */}
-                     {isMe && (
-                       <button
-                         onClick={() => deleteMessage({ messageId: msg._id as Id<"messages"> })}
-                         className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
-                         title="Delete message"
-                       >
-                         <Trash2 className="h-4 w-4" />
-                       </button>
-                     )}
-                     
-                     {/* React Button */}
-                     <span className={isMe ? "" : "order-first"}>
-                       <ReactionsPopover messageId={msg._id as Id<"messages">} reactions={msg.reactions || []} />
-                     </span>
+                     {/* Action Buttons (Visible via selectedMessageId on mobile, or group-hover on desktop) */}
+                     <div className={`flex items-center gap-1 transition-opacity duration-200 bg-background/80 dark:bg-card border border-border/50 backdrop-blur-sm rounded-full px-1 py-0.5 shadow-sm ${
+                       selectedMessageId === msg._id || isMe === false /* Always allow hover on desktop */
+                         ? "opacity-100 z-10" 
+                         : "opacity-0 group-hover:opacity-100"
+                     } ${
+                       !isMe && selectedMessageId !== msg._id ? "opacity-0 group-hover:opacity-100" : "" // Ensure logic applies to both
+                     } ${
+                       isMe ? "mr-1" : "ml-1"
+                     }`}>
+                       {isMe && (
+                         <button
+                           onClick={() => {
+                             deleteMessage({ messageId: msg._id as Id<"messages"> });
+                             setSelectedMessageId(null);
+                           }}
+                           className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                           title="Delete message"
+                         >
+                           <Trash2 className="h-3.5 w-3.5" />
+                         </button>
+                       )}
+                       
+                       <div className="text-muted-foreground hover:text-foreground">
+                         <ReactionsPopover 
+                           messageId={msg._id as Id<"messages">} 
+                           reactions={msg.reactions || []} 
+                         />
+                       </div>
+                     </div>
                    </div>
                    
                    {/* Render Active Reactions */}
@@ -281,6 +365,18 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
 
       {/* Input Area */}
       <ChatInput conversationId={conversationId} />
+
+      {/* Group Settings Modal */}
+      {conversation.isGroup && (
+        <GroupSettingsModal 
+          isOpen={isSettingsOpen} 
+          onClose={() => setIsSettingsOpen(false)} 
+          conversationId={conversationId}
+          groupName={conversation.name || "Group"}
+          avatarUrl={conversation.avatarUrl}
+          memberCount={conversation.groupMembers?.length || 0}
+        />
+      )}
     </div>
   );
 }

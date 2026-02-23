@@ -51,8 +51,11 @@ export function ReactionsPopover({ messageId, reactions }: ReactionsPopoverProps
     <div className="relative" ref={popoverRef}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+        className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors flex items-center justify-center"
         title="Add reaction"
       >
         <Smile className="h-4 w-4" />

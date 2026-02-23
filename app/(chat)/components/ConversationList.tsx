@@ -6,8 +6,9 @@ import Image from "next/image";
 import { formatMessageTime } from "@/lib/utils";
 import { useRouter, useParams } from "next/navigation";
 import { OnlineIndicator } from "./OnlineIndicator";
+import { Users } from "lucide-react";
 
-export function ConversationList() {
+export function ConversationList({ onStartGroup }: { onStartGroup: () => void }) {
   const conversations = useQuery(api.conversations.getMyConversations);
   const router = useRouter();
   const params = useParams();
@@ -44,6 +45,14 @@ export function ConversationList() {
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden">
       <div className="flex flex-col gap-1 p-2">
+        <button
+          onClick={onStartGroup}
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-primary/10 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 mb-2"
+        >
+          <Users className="h-4 w-4" />
+          Create Group Chat
+        </button>
+
         {conversations.map((chat) => {
           const isActive = activeChatId === chat._id;
 
@@ -56,7 +65,11 @@ export function ConversationList() {
               }`}
             >
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
-                {chat.otherUser?.avatarUrl ? (
+                {chat.isGroup ? (
+                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary">
+                    <Users className="h-5 w-5" />
+                  </div>
+                ) : chat.otherUser?.avatarUrl ? (
                   <Image src={chat.otherUser.avatarUrl} alt={chat.otherUser.name || "User"} fill className="object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
@@ -64,12 +77,13 @@ export function ConversationList() {
                   </div>
                 )}
               </div>
-              <OnlineIndicator userId={chat.otherUser?._id} />
+              
+              {!chat.isGroup && <OnlineIndicator userId={chat.otherUser?._id} />}
               
               <div className="flex flex-1 flex-col overflow-hidden">
                 <div className="flex items-center justify-between">
                   <span className="truncate text-sm font-semibold text-foreground">
-                    {chat.otherUser?.name || "Unknown User"}
+                    {chat.isGroup ? chat.name : chat.otherUser?.name || "Unknown User"}
                   </span>
                   {chat.lastMessage && (
                     <span className="shrink-0 text-[10px] text-muted-foreground ml-2">

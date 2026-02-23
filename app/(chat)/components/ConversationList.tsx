@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import Image from "next/image";
 import { formatMessageTime } from "@/lib/utils";
 import { useRouter, useParams } from "next/navigation";
+import { OnlineIndicator } from "./OnlineIndicator";
 
 export function ConversationList() {
   const conversations = useQuery(api.conversations.getMyConversations);
@@ -34,7 +35,7 @@ export function ConversationList() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden">
       <div className="flex flex-col gap-1 p-2">
         {conversations.map((chat) => {
           const isActive = activeChatId === chat._id;
@@ -49,13 +50,14 @@ export function ConversationList() {
             >
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
                 {chat.otherUser?.avatarUrl ? (
-                  <Image src={chat.otherUser.avatarUrl} alt={chat.otherUser.name} fill className="object-cover" />
+                  <Image src={chat.otherUser.avatarUrl} alt={chat.otherUser.name || "User"} fill className="object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
-                    {chat.otherUser?.name.charAt(0).toUpperCase()}
+                    {chat.otherUser?.name?.charAt(0).toUpperCase() || "U"}
                   </div>
                 )}
               </div>
+              <OnlineIndicator userId={chat.otherUser?._id} />
               
               <div className="flex flex-1 flex-col overflow-hidden">
                 <div className="flex items-center justify-between">

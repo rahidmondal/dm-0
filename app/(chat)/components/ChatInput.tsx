@@ -10,7 +10,9 @@ export function ChatInput({ conversationId }: { conversationId: Id<"conversation
   const [content, setContent] = useState("");
   const [isSending, setIsSending] = useState(false);
   const sendMessage = useMutation(api.messages.sendMessage);
+  const setTyping = useMutation(api.conversations.setTyping);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastTyped = useRef<number>(0);
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -29,6 +31,17 @@ export function ChatInput({ conversationId }: { conversationId: Id<"conversation
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setContent(e.target.value);
+    
+    // Throttle typing updates to once per second
+    const now = Date.now();
+    if (now - lastTyped.current > 1000) {
+      lastTyped.current = now;
+      setTyping({ conversationId }).catch(console.error);
+    }
+  };
+
   return (
     <div className="border-t border-border bg-card p-4">
       <form onSubmit={handleSend} className="mx-auto flex w-full max-w-4xl items-center gap-2">
@@ -36,7 +49,7 @@ export function ChatInput({ conversationId }: { conversationId: Id<"conversation
           ref={inputRef}
           type="text"
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={handleChange}
           placeholder="Type a message..."
           className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
           disabled={isSending}

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Id } from "@/convex/_generated/dataModel";
+import { OnlineIndicator } from "./OnlineIndicator";
 
 export function UserList({ 
   searchQuery, 
@@ -65,7 +66,7 @@ export function UserList({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden">
       <div className="flex flex-col gap-1 p-2">
         {filteredUsers.map((user) => (
           <button
@@ -74,16 +75,19 @@ export function UserList({
             disabled={pendingId !== null}
             className="flex items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none disabled:opacity-50"
           >
-            <div className="relative flex h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted items-center justify-center">
-              {pendingId === user._id ? (
-                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              ) : user.avatarUrl ? (
-                <Image src={user.avatarUrl} alt={user.name} fill className="object-cover" />
-              ) : (
-                <div className="text-lg font-semibold text-primary">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-              )}
+            <div className="relative shrink-0">
+              <div className="relative flex h-12 w-12 overflow-hidden rounded-full bg-muted items-center justify-center">
+                {pendingId === user._id ? (
+                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                ) : user.avatarUrl ? (
+                  <Image src={user.avatarUrl} alt={user.name} fill className="object-cover" />
+                ) : (
+                  <div className="text-lg font-semibold text-primary">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <OnlineIndicator userId={user._id} />
             </div>
             
             <div className="flex flex-col overflow-hidden">

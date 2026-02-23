@@ -1,18 +1,24 @@
 "use client";
 
-import { useQuery, usePaginatedQuery } from "convex/react";
+import { useQuery, usePaginatedQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Image from "next/image";
 import { ChatInput } from "./ChatInput";
 import { formatMessageTime } from "@/lib/utils";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { OnlineIndicator } from "./OnlineIndicator";
+import { TypingIndicator } from "./TypingIndicator";
 
 export function ChatUI({ conversationId }: { conversationId: Id<"conversations"> }) {
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
+  
+  const isAtBottomRef = useRef(true);
+  const prevMessagesLength = useRef(0);
+  const [showNewBadge, setShowNewBadge] = useState(false);
   
   const conversation = useQuery(api.conversations.getConversation, { conversationId });
   const currentUser = useQuery(api.auth.current);
@@ -27,12 +33,44 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
     { initialNumItems: 50 }
   );
 
-  // Auto-scroll to bottom on new messages
+  const markRead = useMutation(api.conversations.markRead);
+
+  // Auto-scroll to bottom on new messages and mark read
   useEffect(() => {
     if (messages.length > 0) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      const isInitialLoad = prevMessagesLength.current === 0;
+      const hasNewMessages = messages.length > prevMessagesLength.current;
+      
+      prevMessagesLength.current = messages.length;
+      
+      // Mark the latest message as read
+      const latestMessage = messages[messages.length - 1];
+      if (latestMessage) {
+        markRead({ conversationId, messageId: latestMessage._id }).catch(console.error);
+      }
+
+      const isMyMessage = latestMessage?.senderId === currentUser?._id;
+
+      if (isAtBottomRef.current || isInitialLoad || isMyMessage) {
+        setTimeout(() => {
+          bottomRef.current?.scrollIntoView({ behavior: isInitialLoad ? "auto" : "smooth" });
+        }, 10);
+      } else if (hasNewMessages) {
+        setTimeout(() => {
+          setShowNewBadge(true);
+        }, 0);
+      }
     }
-  }, [messages]);
+  }, [messages, conversationId, markRead, currentUser?._id]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const atBottom = scrollHeight - scrollTop - clientHeight < 100;
+    isAtBottomRef.current = atBottom;
+    if (atBottom && showNewBadge) {
+      setShowNewBadge(false);
+    }
+  };
 
   if (conversation === undefined || currentUser === undefined) {
     return (
@@ -55,7 +93,7 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
   }
 
   return (
-    <div className="flex h-full flex-1 flex-col overflow-hidden bg-background">
+    <div className="flex h-full flex-1 flex-col overflow-hidden bg-background relative">
       {/* Chat Header */}
       <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-card/80 px-4 backdrop-blur-md">
         <button 
@@ -65,14 +103,17 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
         
-        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted">
-          {conversation.otherUser?.avatarUrl ? (
-            <Image src={conversation.otherUser.avatarUrl} alt={conversation.otherUser.name || "User"} fill className="object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
-              {conversation.otherUser?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
-          )}
+        <div className="relative h-10 w-10 shrink-0">
+          <div className="relative h-full w-full overflow-hidden rounded-full bg-muted">
+            {conversation.otherUser?.avatarUrl ? (
+              <Image src={conversation.otherUser.avatarUrl} alt={conversation.otherUser.name || "User"} fill className="object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
+                {conversation.otherUser?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+            )}
+          </div>
+          <OnlineIndicator userId={conversation.otherUser?._id} />
         </div>
         
         <div className="flex flex-col">
@@ -82,7 +123,10 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+      <div 
+        className="flex-1 overflow-y-auto p-4 sm:p-6"
+        onScroll={handleScroll}
+      >
         <div className="mx-auto flex max-w-4xl flex-col gap-4 relative min-h-full justify-end">
           
           {status === "CanLoadMore" && (
@@ -135,9 +179,28 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
              })
           )}
           
+          <TypingIndicator 
+            typingUntil={conversation.otherMember?.typingUntil} 
+            name={conversation.otherUser?.name} 
+          />
+          
           <div ref={bottomRef} className="h-1 shrink-0" />
         </div>
       </div>
+
+      {showNewBadge && (
+        <div className="absolute bottom-20 left-1/2 z-10 -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <button 
+            onClick={() => {
+              bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+              setShowNewBadge(false);
+            }}
+            className="flex items-center gap-2 rounded-full bg-primary/95 px-4 py-1.5 text-sm font-medium text-primary-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-primary"
+          >
+            ↓ New messages
+          </button>
+        </div>
+      )}
 
       {/* Input Area */}
       <ChatInput conversationId={conversationId} />

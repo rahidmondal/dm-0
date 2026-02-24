@@ -1,99 +1,47 @@
-# DM-0: Full-Stack Realtime Chat Application
+# DM-0
 
-A high-performance, iMessage-inspired real-time chat application built with Next.js App Router, Convex, and Clerk Authentication. Designed with a mobile-first philosophy featuring instant message delivery, live presence indicators, and advanced group chat capabilities.
+A real-time messaging app built with Next.js, Convex, and Clerk.
 
-## 🚀 Features (14 Core Capabilities)
+## Features
 
-**1. Authentication & Security**
+- **Real-time messaging** — instant delivery with live typing indicators
+- **Group chats** — create groups, invite members, upload avatars
+- **Presence status** — see who's online in real time
+- **Emoji reactions** — react to messages with emojis
+- **Unread badges** — track unread messages per conversation
+- **User profiles** — custom usernames and synced avatars
+- **Secure auth** — powered by Clerk with protected routes
 
-- Secure user signup/login using **Clerk** authentication.
-- Private routes blocking unauthenticated connections.
+## Tech Stack
 
-**2. Custom User Profiles**
+| Layer         | Technology           |
+| ------------- | -------------------- |
+| Framework     | Next.js (App Router) |
+| Backend / DB  | Convex               |
+| Auth          | Clerk                |
+| Styling       | Tailwind CSS         |
+| UI Components | shadcn/ui            |
+| Icons         | Lucide React         |
 
-- Dedicated Profile view utilizing Convex database mutations.
-- Users can set custom Usernames and sync avatars.
-
-**3. Direct Messaging Engine**
-
-- Real-time `1-on-1` messaging utilizing **Convex Subscriptions** for instant delivery (<10ms).
-- Dynamic creation of conversations without manual page refresh.
-
-**4. Search & Discovery**
-
-- Global sidebar fuzzy-search for querying active users.
-- Live-filter updates preventing interface layout shifts.
-
-**5. Relative Timestamp Formatting**
-
-- iMessage-style timestamp parsing logic.
-- Dynamically renders "2:30 PM", "Yesterday", or "Oct 24" for messages and active conversations.
-
-**6. Live Presence Indicators**
-
-- Global "Active Heartbeat" presence system.
-- Solid green online indicators for users active within the last 30 seconds.
-
-**7. Synchronized Typing Indicators**
-
-- Debounced keystroke events tracking typing states up to 2 seconds into the future.
-- Animated CSS bouncing-dot indicators for active typists.
-
-**8. Unread Message Badging**
-
-- Tracks unread messages by slicing timestamps against a `lastReadMessageId` marker.
-- Real-time notification badges mapped accurately in the sidebar.
-
-**9. Smart Auto-Scroll Behavior**
-
-- Viewport intersection observers utilizing `useRef` and React `onScroll`.
-- Smartly prevents auto-scrolling when users are reading earlier history.
-- "↓ New messages" pill for unread active tracking.
-
-**10. Soft Message Deletes**
-
-- Hover-state (desktop) and Long-press (mobile) trash icon actions.
-- Cleanly patches messages as `isDeleted: true` to render an italicized placeholder instead of severing the DB record.
-
-**11. Emoji Reaction Engine**
-
-- Click-to-open `ReactionsPopover` mapping 10 core emojis.
-- Aggregates Convex array records rendering compact counter bubbles underneath messages.
-
-**12. Skeleton Loading Layouts**
-
-- Highly polished Tailwind `animate-pulse` structure placeholders.
-- Maps the exact dimensional geometry of the sidebar and chat header to eliminate layout jumping.
-
-**13. Group Chat Architecture (Creation)**
-
-- State-driven Multi-Select mode allowing users to aggregate multiple members.
-- Integrated `shadcn` React Dialog Modals replacing native browser prompts for custom Group Naming.
-
-**14. Group Administration (Avatar Uploads & Deletion)**
-
-- `GroupSettingsModal` accessible via Chat Headers.
-- Convex Storage URL generation allowing authorized members to upload custom group Avatars.
-- Safe `deleteGroup` DB cascading method sweeping up nested messages and memberships gracefully.
-
----
-
-## 💻 Tech Stack
-
-- **Framework**: Next.js 14 (App Router)
-- **Database / Backend**: Convex
-- **Authentication**: Clerk
-- **Styling**: Tailwind CSS
-- **UI Components**: Radix UI (shadcn/ui)
-- **Icons**: Lucide React
-
-## 🛠 Getting Started
-
-First, run the development server:
+## Getting Started
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Ensure your `.env.local` contains your active Clerk Publishable Key, Convex Deployment URL, and your Convex JWT template issuer domain.
+Create a `.env.local` with:
+```
+CONVEX_DEPLOYMENT=
+
+NEXT_PUBLIC_CONVEX_URL=
+NEXT_PUBLIC_CONVEX_SITE_URL=
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+CLERK_JWT_ISSUER_DOMAIN=
+```
+
+## License
+
+© 2026 DM-0. All rights reserved.

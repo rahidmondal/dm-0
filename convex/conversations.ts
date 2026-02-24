@@ -322,13 +322,24 @@ export const deleteGroup = mutation({
       throw new Error('Only the group admin can delete this group');
     }
 
-    // 1. Delete all messages
+    // 1. Delete all messages and their reactions
     const messages = await ctx.db
       .query('messages')
       .withIndex('by_conversationId', q => q.eq('conversationId', args.conversationId))
       .collect();
 
     for (const msg of messages) {
+      // Find and delete reactions for this specific message
+      const reactions = await ctx.db
+        .query('reactions')
+        .withIndex('by_messageId', q => q.eq('messageId', msg._id))
+        .collect();
+
+      for (const reaction of reactions) {
+        await ctx.db.delete(reaction._id);
+      }
+
+      // Delete the message itself
       await ctx.db.delete(msg._id);
     }
 
@@ -460,6 +471,10 @@ export const addMembers = mutation({
     const conversation = await ctx.db.get(args.conversationId);
     if (!conversation || !conversation.isGroup) {
       throw new Error('Group not found');
+    }
+
+    if (conversation.adminId !== currentUser._id) {
+      throw new Error('Only the group admin can add members');
     }
 
     const membership = await ctx.db

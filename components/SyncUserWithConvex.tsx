@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useUser } from "@clerk/nextjs";
-import { useMutation } from "convex/react";
-import { useEffect } from "react";
-import { api } from "@/convex/_generated/api";
+import { useUser } from '@clerk/nextjs';
+import { useMutation } from 'convex/react';
+import { useEffect } from 'react';
+import { api } from '@/convex/_generated/api';
 
 export function SyncUserWithConvex() {
   const { user } = useUser();
@@ -16,7 +16,7 @@ export function SyncUserWithConvex() {
       try {
         await syncUser();
       } catch (error) {
-        console.error("Error syncing user to Convex:", error);
+        console.error('Error syncing user to Convex:', error);
       }
     };
 
@@ -25,4 +25,3 @@ export function SyncUserWithConvex() {
 
   return null;
 }
-

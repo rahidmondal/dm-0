@@ -27,7 +27,7 @@ Represents a chat thread (1-on-1 or Group).
 
 - `isGroup` (boolean)
 - `name` (string, optional)
-- `directKey` (string, optional) - _For 1-on-1 conversations only. Format: `[userIdA]_[userIdB]` sorted lexicographically._
+- `directKey` (string, optional) - _For 1-on-1 conversations only. Format: `[userIdA]_[userIdB]` sorted lexicographically.\_
 - `lastMessageId` (reference to messages, optional) - _Used purely as an optimization for sidebar previews. If a message is soft-deleted, we fallback to querying the `messages` table ordered by `_creationTime` desc limit 1 to compute the correct preview._
 - `updatedAt` (number, system timestamp or manual update for sorting)
 - **Indexes**: `by_directKey` (unique index to strictly enforce only **one** 1-on-1 conversation between any two users).

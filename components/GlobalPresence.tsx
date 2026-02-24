@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 // Generate a stable connection ID for this browser tab session length
-const CONNECTION_ID = typeof window !== "undefined" ? uuidv4() : "";
+const CONNECTION_ID = typeof window !== 'undefined' ? uuidv4() : '';
 const HEARTBEAT_INTERVAL = 15000; // 15 seconds
 
 export function GlobalPresence() {
@@ -24,7 +24,7 @@ export function GlobalPresence() {
 
     // Initial ping
     ping();
-    
+
     // Set up recurring ping
     const intervalId = setInterval(ping, HEARTBEAT_INTERVAL);
 
@@ -32,7 +32,7 @@ export function GlobalPresence() {
     const handleBeforeUnload = () => {
       removePresence({ connectionId: CONNECTION_ID });
     };
-    
+
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {

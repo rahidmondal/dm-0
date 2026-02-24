@@ -5,13 +5,14 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useState, useRef } from "react";
 import { SendHorizonal } from "lucide-react";
+import TextareaAutosize from 'react-textarea-autosize';
 
 export function ChatInput({ conversationId }: { conversationId: Id<"conversations"> }) {
   const [content, setContent] = useState("");
   const [isSending, setIsSending] = useState(false);
   const sendMessage = useMutation(api.messages.sendMessage);
   const setTyping = useMutation(api.conversations.setTyping);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastTyped = useRef<number>(0);
 
   const handleSend = async (e?: React.FormEvent) => {
@@ -31,7 +32,14 @@ export function ChatInput({ conversationId }: { conversationId: Id<"conversation
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
     
     // Throttle typing updates to once per second
@@ -43,21 +51,22 @@ export function ChatInput({ conversationId }: { conversationId: Id<"conversation
   };
 
   return (
-    <div className="border-t border-border bg-card p-4">
-      <form onSubmit={handleSend} className="mx-auto flex w-full max-w-4xl items-center gap-2">
-        <input
+    <div className="border-t border-border bg-card/80 p-4 backdrop-blur-md relative z-20 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.3)]">
+      <form onSubmit={handleSend} className="mx-auto flex w-full max-w-4xl items-end gap-2">
+        <TextareaAutosize
           ref={inputRef}
-          type="text"
           value={content}
           onChange={handleChange}
+          onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+          maxRows={6}
+          className="flex-1 resize-none rounded-2xl border border-border bg-background px-4 py-3 text-[15px] focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 transition-all shadow-sm"
           disabled={isSending}
         />
         <button
           type="submit"
           disabled={!content.trim() || isSending}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary-hover disabled:pointer-events-none disabled:opacity-50"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all duration-200 hover:bg-primary-hover hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:opacity-50 shadow-md"
         >
           <SendHorizonal className="h-5 w-5" />
         </button>

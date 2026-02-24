@@ -13,7 +13,7 @@ import { OnlineIndicator } from "./OnlineIndicator";
 import { TypingIndicator } from "./TypingIndicator";
 import { ReactionsPopover } from "./ReactionsPopover";
 import { GroupSettingsModal } from "./GroupSettingsModal";
-
+import { motion, AnimatePresence } from "framer-motion";
 export function ChatUI({ conversationId }: { conversationId: Id<"conversations"> }) {
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -139,34 +139,37 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden bg-background relative">
       {/* Chat Header */}
-      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-card/80 px-4 backdrop-blur-md">
+      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-card/80 px-4 backdrop-blur-md relative overflow-hidden">
+        {/* Subtle gradient accent */}
+        <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-transparent to-transparent pointer-events-none" />
+        
         <button 
           onClick={() => router.push("/chat")}
-          className="mr-1 block rounded-full p-2 hover:bg-muted sm:hidden"
+          className="mr-1 block rounded-full p-2 hover:bg-muted transition-colors sm:hidden relative z-10"
         >
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
         
         <div 
-          className={`flex items-center gap-3 ${conversation.isGroup ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+          className={`flex items-center gap-3 relative z-10 ${conversation.isGroup ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
           onClick={() => {
             if (conversation.isGroup) setIsSettingsOpen(true);
           }}
         >
           <div className="relative h-10 w-10 shrink-0">
-            <div className="relative h-full w-full overflow-hidden rounded-full bg-muted">
+            <div className="relative h-full w-full overflow-hidden rounded-full bg-muted ring-2 ring-border/50 shadow-sm">
               {conversation.isGroup ? (
                 conversation.avatarUrl ? (
                   <Image src={conversation.avatarUrl} alt={conversation.name || "Group"} fill className="object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
+                  <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary/20 to-primary/5 text-lg font-semibold text-primary">
                     {conversation.name?.charAt(0).toUpperCase() || "G"}
                   </div>
                 )
               ) : conversation.otherUser?.avatarUrl ? (
                 <Image src={conversation.otherUser.avatarUrl} alt={conversation.otherUser.name || "User"} fill className="object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
+                <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-primary/20 to-primary/5 text-lg font-semibold text-primary">
                   {conversation.otherUser?.name?.charAt(0).toUpperCase() || "U"}
                 </div>
               )}
@@ -222,34 +225,46 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
                 <p className="text-xs text-muted-foreground">Send a message to start the conversation</p>
              </div>
           ) : (
-             messages.map((msg, index) => {
-               const isMe = msg.senderId === currentUser._id;
-               
-               // Check if the previous message was from the same user to avoid redundant sender names
-               const prevMsg = index > 0 ? messages[index - 1] : null;
-               const showSenderName = conversation.isGroup && !isMe && (!prevMsg || prevMsg.senderId !== msg.senderId);
-               
-               if (msg.isDeleted) {
-                 return (
-                   <div key={msg._id} className={`flex max-w-[80%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}>
-                     {showSenderName && (
-                       <span className="pl-1 text-xs font-medium text-muted-foreground">{msg.senderName}</span>
-                     )}
-                     <div className="rounded-2xl px-4 py-2 text-[15px] border border-border bg-transparent text-muted-foreground italic">
-                       This message was deleted
-                     </div>
-                     <span className="px-1 text-[10px] text-muted-foreground font-medium">
-                       {formatMessageTime(msg._creationTime)}
-                     </span>
-                   </div>
-                 );
-               }
+             <AnimatePresence initial={false}>
+               {messages.map((msg, index) => {
+                 const isMe = msg.senderId === currentUser._id;
+                 
+                 // Check if the previous message was from the same user to avoid redundant sender names
+                 const prevMsg = index > 0 ? messages[index - 1] : null;
+                 const showSenderName = conversation.isGroup && !isMe && (!prevMsg || prevMsg.senderId !== msg.senderId);
+                 
+                 if (msg.isDeleted) {
+                   return (
+                     <motion.div 
+                       key={msg._id} 
+                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                       animate={{ opacity: 1, y: 0, scale: 1 }}
+                       exit={{ opacity: 0, scale: 0.95 }}
+                       transition={{ duration: 0.2 }}
+                       className={`flex max-w-[80%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}
+                     >
+                       {showSenderName && (
+                         <span className="pl-1 text-xs font-medium text-muted-foreground">{msg.senderName}</span>
+                       )}
+                       <div className="rounded-2xl px-4 py-2 text-[15px] border border-border bg-transparent text-muted-foreground italic">
+                         This message was deleted
+                       </div>
+                       <span className="px-1 text-[10px] text-muted-foreground font-medium">
+                         {formatMessageTime(msg._creationTime)}
+                       </span>
+                     </motion.div>
+                   );
+                 }
 
-               return (
-                 <div
-                   key={msg._id}
-                   className={`group flex max-w-[80%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}
-                 >
+                 return (
+                   <motion.div
+                     key={msg._id}
+                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                     animate={{ opacity: 1, y: 0, scale: 1 }}
+                     exit={{ opacity: 0, scale: 0.95 }}
+                     transition={{ duration: 0.2 }}
+                     className={`group flex max-w-[80%] flex-col gap-1 ${isMe ? "self-end items-end" : "self-start items-start"}`}
+                   >
                    {showSenderName && (
                      <span className="pl-1 text-xs font-medium text-muted-foreground">{msg.senderName}</span>
                    )}
@@ -266,12 +281,12 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
                      }}
                    >
                      <div 
-                       className={`rounded-2xl px-4 py-2 text-[15px] transition-transform duration-200 ${
+                       className={`rounded-2xl px-4 py-2 text-[15px] transition-transform duration-200 shadow-sm backdrop-blur-md ${
                          selectedMessageId === msg._id ? "scale-[0.98] opacity-90" : ""
                        } ${
                          isMe 
-                           ? "bg-primary text-primary-foreground rounded-br-sm" 
-                           : "bg-muted text-foreground rounded-bl-sm"
+                           ? "bg-primary text-primary-foreground border border-primary/20 rounded-br-sm" 
+                           : "bg-muted text-foreground border border-border/50 rounded-bl-sm"
                        }`}
                      >
                        {msg.content}
@@ -335,15 +350,24 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
                    <span className="px-1 text-[10px] text-muted-foreground font-medium">
                      {formatMessageTime(msg._creationTime)}
                    </span>
-                 </div>
+                 </motion.div>
                );
-             })
+             })}
+             </AnimatePresence>
           )}
           
-          <TypingIndicator 
-            typingUntil={conversation.otherMember?.typingUntil} 
-            name={conversation.otherUser?.name} 
-          />
+          {/* Typing Indicator — supports both 1-on-1 and group */}
+          {conversation.isGroup ? (
+            <TypingIndicator 
+              groupMembers={conversation.groupMembers || []}
+              currentUserId={currentUser._id}
+            />
+          ) : (
+            <TypingIndicator 
+              typingUntil={conversation.otherMember?.typingUntil} 
+              name={conversation.otherUser?.name} 
+            />
+          )}
           
           <div ref={bottomRef} className="h-1 shrink-0" />
         </div>
@@ -375,6 +399,8 @@ export function ChatUI({ conversationId }: { conversationId: Id<"conversations">
           groupName={conversation.name || "Group"}
           avatarUrl={conversation.avatarUrl}
           memberCount={conversation.groupMembers?.length || 0}
+          groupMembers={conversation.groupMembers || []}
+          adminId={conversation.adminId}
         />
       )}
     </div>

@@ -189,6 +189,7 @@ export const getConversation = query({
       isGroup: conversation.isGroup,
       name: conversation.name,
       avatarUrl: conversation.avatarUrl,
+      adminId: conversation.adminId,
       otherUser,
       otherMember: otherMember ? { typingUntil: otherMember.typingUntil } : null,
       groupMembers,
@@ -273,8 +274,8 @@ export const createGroup = mutation({
     const conversationId = await ctx.db.insert('conversations', {
       isGroup: true,
       name: args.name,
+      adminId: currentUser._id,
       updatedAt: Date.now(),
-      // directKey is omitted for groups
     });
 
     // Add the creator
@@ -316,16 +317,9 @@ export const deleteGroup = mutation({
       throw new Error('Group not found');
     }
 
-    // Verify current user is a member of the group
-    const membership = await ctx.db
-      .query('members')
-      .withIndex('by_userId_and_conversationId', q =>
-        q.eq('userId', currentUser._id).eq('conversationId', args.conversationId),
-      )
-      .unique();
-
-    if (!membership) {
-      throw new Error('Unauthorized');
+    // Only admin can delete the group
+    if (conversation.adminId !== currentUser._id) {
+      throw new Error('Only the group admin can delete this group');
     }
 
     // 1. Delete all messages
@@ -398,5 +392,112 @@ export const updateGroupAvatar = mutation({
     if (!avatarUrl) throw new Error('Failed to get URL for storage ID');
 
     await ctx.db.patch(args.conversationId, { avatarUrl });
+  },
+});
+
+export const leaveGroup = mutation({
+  args: { conversationId: v.id('conversations') },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Unauthenticated');
+
+    const currentUser = await ctx.db
+      .query('users')
+      .withIndex('by_clerkId', q => q.eq('clerkId', identity.subject))
+      .unique();
+
+    if (!currentUser) throw new Error('User not found');
+
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || !conversation.isGroup) {
+      throw new Error('Group not found');
+    }
+
+    const membership = await ctx.db
+      .query('members')
+      .withIndex('by_userId_and_conversationId', q =>
+        q.eq('userId', currentUser._id).eq('conversationId', args.conversationId),
+      )
+      .unique();
+
+    if (!membership) {
+      throw new Error('Not a member');
+    }
+
+    // Admin cannot leave — must delete the group instead
+    if (conversation.adminId === currentUser._id) {
+      throw new Error('Admin cannot leave the group. Delete it instead.');
+    }
+
+    await ctx.db.delete(membership._id);
+
+    // Add system-like message indicating user left
+    await ctx.db.insert('messages', {
+      conversationId: args.conversationId,
+      senderId: currentUser._id,
+      content: `${currentUser.name} left the group`,
+      isDeleted: false,
+    });
+  },
+});
+
+export const addMembers = mutation({
+  args: {
+    conversationId: v.id('conversations'),
+    memberIds: v.array(v.id('users')),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Unauthenticated');
+
+    const currentUser = await ctx.db
+      .query('users')
+      .withIndex('by_clerkId', q => q.eq('clerkId', identity.subject))
+      .unique();
+
+    if (!currentUser) throw new Error('User not found');
+
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || !conversation.isGroup) {
+      throw new Error('Group not found');
+    }
+
+    const membership = await ctx.db
+      .query('members')
+      .withIndex('by_userId_and_conversationId', q =>
+        q.eq('userId', currentUser._id).eq('conversationId', args.conversationId),
+      )
+      .unique();
+
+    if (!membership) {
+      throw new Error('Unauthorized');
+    }
+
+    let addedCount = 0;
+    for (const memberId of args.memberIds) {
+      const existing = await ctx.db
+        .query('members')
+        .withIndex('by_userId_and_conversationId', q =>
+          q.eq('userId', memberId).eq('conversationId', args.conversationId),
+        )
+        .unique();
+
+      if (!existing) {
+        await ctx.db.insert('members', {
+          conversationId: args.conversationId,
+          userId: memberId,
+        });
+        addedCount++;
+      }
+    }
+
+    if (addedCount > 0) {
+      await ctx.db.insert('messages', {
+        conversationId: args.conversationId,
+        senderId: currentUser._id,
+        content: `${currentUser.name} added ${addedCount} new member${addedCount > 1 ? 's' : ''}`,
+        isDeleted: false,
+      });
+    }
   },
 });

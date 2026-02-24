@@ -26,6 +26,7 @@ export default defineSchema({
     name: v.optional(v.string()),
     avatarUrl: v.optional(v.string()),
     directKey: v.optional(v.string()), // Format: sorted `userIdA_userIdB`
+    adminId: v.optional(v.id('users')), // Group creator/admin
     lastMessageId: v.optional(v.id('messages')),
     updatedAt: v.number(),
   }).index('by_directKey', ['directKey']),

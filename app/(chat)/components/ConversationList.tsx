@@ -7,6 +7,22 @@ import { formatMessageTime } from "@/lib/utils";
 import { useRouter, useParams } from "next/navigation";
 import { OnlineIndicator } from "./OnlineIndicator";
 import { Users } from "lucide-react";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0 }
+};
 
 export function ConversationList({ onStartGroup }: { onStartGroup: () => void }) {
   const conversations = useQuery(api.conversations.getMyConversations);
@@ -32,81 +48,86 @@ export function ConversationList({ onStartGroup }: { onStartGroup: () => void })
     );
   }
 
-  if (conversations.length === 0) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-muted-foreground">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-4 opacity-20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <p className="text-base font-medium text-foreground">No conversations yet</p>
-        <p className="text-sm mt-1">Search for a user to start chatting.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden">
-      <div className="flex flex-col gap-1 p-2">
+      <div className="p-2 mb-1">
         <button
           onClick={onStartGroup}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-primary/10 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 mb-2"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-primary/10 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
         >
           <Users className="h-4 w-4" />
           Create Group Chat
         </button>
+      </div>
 
-        {conversations.map((chat) => {
-          const isActive = activeChatId === chat._id;
+      {conversations.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-muted-foreground">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-4 opacity-20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <p className="text-base font-medium text-foreground">No conversations yet</p>
+          <p className="text-sm mt-1">Search for a user to start chatting.</p>
+        </div>
+      ) : (
+        <motion.div 
+          variants={containerVariants} 
+          initial="hidden" 
+          animate="show" 
+          className="flex flex-col gap-1 p-2 pt-0"
+        >
+          {conversations.map((chat) => {
+            const isActive = activeChatId === chat._id;
 
-          return (
-            <button
-              key={chat._id}
-              onClick={() => router.push(`/chat/${chat._id}`)}
-              className={`flex items-center gap-3 rounded-lg p-3 text-left transition-colors focus-visible:outline-none ${
-                isActive ? "bg-primary/10" : "hover:bg-muted/60 focus-visible:bg-muted/60"
-              }`}
-            >
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted">
-                {chat.isGroup ? (
-                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary">
-                    <Users className="h-5 w-5" />
-                  </div>
-                ) : chat.otherUser?.avatarUrl ? (
-                  <Image src={chat.otherUser.avatarUrl} alt={chat.otherUser.name || "User"} fill className="object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
-                    {chat.otherUser?.name?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                )}
-              </div>
-              
-              {!chat.isGroup && <OnlineIndicator userId={chat.otherUser?._id} />}
-              
-              <div className="flex flex-1 flex-col overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <span className="truncate text-sm font-semibold text-foreground">
-                    {chat.isGroup ? chat.name : chat.otherUser?.name || "Unknown User"}
-                  </span>
-                  {chat.lastMessage && (
-                    <span className="shrink-0 text-[10px] text-muted-foreground ml-2">
-                      {formatMessageTime(chat.lastMessage._creationTime)}
-                    </span>
+            return (
+              <motion.button
+                variants={itemVariants}
+                key={chat._id}
+                onClick={() => router.push(`/chat/${chat._id}`)}
+                className={`flex items-center gap-3 rounded-lg p-3 text-left transition-all duration-200 focus-visible:outline-none ${
+                  isActive ? "bg-primary/15 shadow-sm scale-[0.98]" : "hover:bg-muted/60 focus-visible:bg-muted/60"
+                }`}
+              >
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted shadow-sm border border-border/50">
+                  {chat.isGroup ? (
+                    <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary">
+                      <Users className="h-5 w-5" />
+                    </div>
+                  ) : chat.otherUser?.avatarUrl ? (
+                    <Image src={chat.otherUser.avatarUrl} alt={chat.otherUser.name || "User"} fill className="object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
+                      {chat.otherUser?.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
                   )}
+                  {!chat.isGroup && <OnlineIndicator userId={chat.otherUser?._id} />}
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <span className={`truncate text-xs ${chat.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                    {chat.lastMessage ? chat.lastMessage.content : "No messages yet"}
-                  </span>
-                  {chat.unreadCount > 0 && (
-                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                      {chat.unreadCount}
+                <div className="flex flex-1 flex-col overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <span className="truncate text-sm font-semibold text-foreground">
+                      {chat.isGroup ? chat.name : chat.otherUser?.name || "Unknown User"}
                     </span>
-                  )}
+                    {chat.lastMessage && (
+                      <span className="shrink-0 text-[10px] text-muted-foreground ml-2 font-medium">
+                        {formatMessageTime(chat.lastMessage._creationTime)}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-0.5">
+                    <span className={`truncate text-xs ${chat.unreadCount > 0 ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
+                      {chat.lastMessage ? chat.lastMessage.content : "No messages yet"}
+                    </span>
+                    {chat.unreadCount > 0 && (
+                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-sm">
+                        {chat.unreadCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+              </motion.button>
+            );
+          })}
+        </motion.div>
+      )}
     </div>
   );
 }

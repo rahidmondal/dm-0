@@ -1,4 +1,4 @@
-import { mutation, query } from './_generated/server';
+import { mutation, query, internalMutation } from './_generated/server';
 import { v } from 'convex/values';
 
 // Heartbeat mutation: Called by the client every 10-15 seconds
@@ -71,5 +71,25 @@ export const isUserOnline = query({
       .first();
 
     return !!activePresence;
+  },
+});
+
+// Internal mutation to sweep dead presence records, called by cron
+export const clearStalePresence = internalMutation({
+  args: {},
+  handler: async ctx => {
+    // Delete records older than 5 minutes
+    const threshold = Date.now() - 5 * 60 * 1000;
+
+    // We don't have an index on just 'updatedAt', so we collect and filter.
+    // In a massive app you'd add an index, but for heartbeat cleanup this is fine.
+    const staleRecords = await ctx.db
+      .query('presence')
+      .filter(q => q.lt(q.field('updatedAt'), threshold))
+      .collect();
+
+    for (const record of staleRecords) {
+      await ctx.db.delete(record._id);
+    }
   },
 });

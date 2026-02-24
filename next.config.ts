@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'standing-vole-856.eu-west-1.convex.cloud',
       },
+      {
+        protocol: 'https',
+        hostname: 'grateful-squirrel-881.eu-west-1.convex.cloud',
+      },
     ],
   },
 };

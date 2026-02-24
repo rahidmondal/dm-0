@@ -3,72 +3,202 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Authenticated, Unauthenticated } from 'convex/react';
-import { SignUpButton, SignInButton, UserButton } from '@clerk/nextjs';
+import { SignUpButton, SignInButton } from '@clerk/nextjs';
 import Image from 'next/image';
+import Link from 'next/link';
+import { Zap, Shield, Users } from 'lucide-react';
 
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Home() {
   return (
-    <div className="bg-background text-foreground flex min-h-screen flex-col transition-colors duration-300">
-      <header className="border-border bg-background/80 sticky top-0 z-10 flex w-full items-center justify-between border-b p-4 backdrop-blur-md">
-        <div className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="dm-0 Logo" width={32} height={32} className="rounded-lg shadow-sm" />
-          <span className="text-primary text-xl font-bold tracking-tight">dm-0</span>
-        </div>
+    <div className="relative min-h-screen">
+      {/* Background — light mode */}
+      <div className="absolute inset-0 -z-10 h-full w-full bg-white [background:radial-gradient(125%_125%_at_50%_10%,#fff_40%,#63e_100%)] dark:hidden" />
+      {/* Background — dark mode */}
+      <div className="absolute inset-0 -z-10 hidden h-full w-full [background:radial-gradient(125%_125%_at_50%_10%,#020617_40%,#63e_100%)] dark:block" />
 
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <Authenticated>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: 'h-9 w-9',
-                },
-              }}
+      {/* Theme toggle — top right */}
+      <div className="absolute right-6 top-6 z-20">
+        <ThemeToggle />
+      </div>
+
+      <Authenticated>
+        <AuthRedirect />
+      </Authenticated>
+
+      <Unauthenticated>
+        <div className="relative z-10 flex flex-col">
+          {/* ═══════════════════════════════════
+              HERO
+          ═══════════════════════════════════ */}
+          <section className="flex min-h-screen flex-col items-center justify-center px-6 py-24 text-center">
+            <Image
+              src="/logo.svg"
+              alt="DM-0"
+              width={80}
+              height={80}
+              className="mb-6 rounded-2xl drop-shadow-lg"
             />
-          </Authenticated>
-          <Unauthenticated>
-            <span className="text-muted-foreground hidden text-sm sm:inline-block">Not logged in</span>
-          </Unauthenticated>
-        </div>
-      </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center p-6">
-        <Authenticated>
-          {/* We use an effect in a component block to automatically push the user to the chat layout */}
-          <AuthRedirect />
-        </Authenticated>
+            <h1 className="mb-4 text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl dark:text-white">
+              DM-0
+            </h1>
 
-        <Unauthenticated>
-          <div className="border-border bg-card animate-in slide-in-from-bottom-8 flex w-full max-w-sm flex-col gap-8 rounded-2xl border p-8 shadow-2xl duration-500">
-            <div className="flex flex-col items-center gap-2 text-center">
-              <Image
-                src="/logo.svg"
-                alt="dm-0 Logo"
-                width={64}
-                height={64}
-                className="mb-4 rounded-2xl drop-shadow-md"
-              />
-              <h1 className="text-2xl font-bold tracking-tight">Sign in to dm-0</h1>
-              <p className="text-muted-foreground text-sm">Join our real-time messaging platform today.</p>
-            </div>
+            <p className="mx-auto mb-4 max-w-md text-lg text-slate-600 dark:text-slate-300">
+              Welcome to a new way of{' '}
+              <span className="font-semibold text-sky-900 dark:text-sky-400">communication</span>
+            </p>
 
-            <div className="flex flex-col gap-4">
+            <p className="mx-auto mb-10 max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              Fast, secure, and beautifully designed real-time messaging for teams and friends.
+            </p>
+
+            <div className="flex w-full max-w-xs flex-col gap-3">
               <SignInButton mode="modal">
-                <button className="bg-primary text-primary-foreground hover:bg-primary-hover flex w-full items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]">
+                <button className="rounded-lg bg-sky-900 px-6 py-3 font-medium text-white transition-all hover:scale-[1.02] hover:bg-sky-800 active:scale-[0.98] dark:bg-sky-400 dark:text-slate-900 dark:hover:bg-sky-300">
                   Sign in
                 </button>
               </SignInButton>
+
               <SignUpButton mode="modal">
-                <button className="border-border bg-background text-foreground hover:bg-muted flex w-full items-center justify-center rounded-lg border px-4 py-2.5 text-sm font-semibold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]">
+                <button className="rounded-lg border border-slate-200 bg-white px-6 py-3 font-medium text-slate-900 transition-all hover:scale-[1.02] hover:bg-slate-50 active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">
                   Create an account
                 </button>
               </SignUpButton>
             </div>
-          </div>
-        </Unauthenticated>
-      </main>
+
+            {/* Scroll hint */}
+            <div className="mt-16 animate-bounce text-slate-400 dark:text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12l7 7 7-7" />
+              </svg>
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════
+              ABOUT — 3 bullet explanation
+          ═══════════════════════════════════ */}
+          <section className="px-6 py-24">
+            <div className="mx-auto max-w-4xl">
+              <h2 className="mb-4 text-center text-3xl font-bold text-slate-900 dark:text-white">
+                Why DM-0?
+              </h2>
+              <p className="mx-auto mb-12 max-w-lg text-center text-sm text-slate-500 dark:text-slate-400">
+                Built for speed, security, and simplicity.
+              </p>
+
+              <div className="grid gap-8 sm:grid-cols-3">
+                <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white/70 p-8 text-center shadow-sm backdrop-blur-sm transition-transform hover:scale-[1.02] dark:border-slate-800 dark:bg-slate-900/70">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 dark:bg-sky-900/40">
+                    <Zap className="h-6 w-6 text-sky-600 dark:text-sky-400" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">Real-Time</h3>
+                  <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                    Messages delivered instantly with live typing indicators and presence status.
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white/70 p-8 text-center shadow-sm backdrop-blur-sm transition-transform hover:scale-[1.02] dark:border-slate-800 dark:bg-slate-900/70">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100 dark:bg-violet-900/40">
+                    <Shield className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">Secure</h3>
+                  <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                    Authentication powered by Clerk with enterprise-grade session management.
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white/70 p-8 text-center shadow-sm backdrop-blur-sm transition-transform hover:scale-[1.02] dark:border-slate-800 dark:bg-slate-900/70">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/40">
+                    <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">Group Chat</h3>
+                  <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                    Create conversations, invite members, and collaborate with your team seamlessly.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════
+              TECH STACK ROW
+          ═══════════════════════════════════ */}
+          <section className="px-6 py-16">
+            <div className="mx-auto max-w-3xl">
+              <h2 className="mb-10 text-center text-2xl font-bold text-slate-900 dark:text-white">
+                Built With
+              </h2>
+
+              <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+                {[
+                  { name: 'Next.js', icon: '▲' },
+                  { name: 'Convex', icon: '◈' },
+                  { name: 'Clerk', icon: '🔐' },
+                  { name: 'Tailwind CSS', icon: '🎨' },
+                  { name: 'TypeScript', icon: '⌨' },
+                  { name: 'shadcn/ui', icon: '◻' },
+                ].map(tech => (
+                  <div
+                    key={tech.name}
+                    className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/60 px-4 py-2 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/60"
+                  >
+                    <span>{tech.icon}</span>
+                    <span>{tech.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════
+              CTA BLOCK
+          ═══════════════════════════════════ */}
+          <section className="px-6 py-24">
+            <div className="mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white/70 p-10 text-center shadow-lg backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70">
+              <h2 className="mb-3 text-2xl font-bold text-slate-900 dark:text-white">
+                Ready to start chatting?
+              </h2>
+              <p className="mb-8 text-sm text-slate-500 dark:text-slate-400">
+                Join DM-0 and experience messaging the way it should be.
+              </p>
+
+              <SignUpButton mode="modal">
+                <button className="rounded-lg bg-sky-900 px-8 py-3 font-medium text-white transition-all hover:scale-[1.02] hover:bg-sky-800 active:scale-[0.98] dark:bg-sky-400 dark:text-slate-900 dark:hover:bg-sky-300">
+                  Get Started — It&apos;s Free
+                </button>
+              </SignUpButton>
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════
+              FOOTER
+          ═══════════════════════════════════ */}
+          <footer className="px-6 py-8">
+            <div className="mx-auto flex max-w-4xl flex-col items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Image src="/logo.svg" alt="DM-0" width={20} height={20} className="rounded-md" />
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">DM-0</span>
+              </div>
+
+              <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-500">
+                <Link href="/terms-of-service" className="transition-colors hover:text-slate-600 dark:hover:text-slate-300">
+                  Terms of Service
+                </Link>
+                <span>·</span>
+                <Link href="/privacy-policy" className="transition-colors hover:text-slate-600 dark:hover:text-slate-300">
+                  Privacy Policy
+                </Link>
+              </div>
+
+              <p className="text-xs text-slate-500 dark:text-slate-600">
+                © {new Date().getFullYear()} DM-0. All rights reserved.
+              </p>
+            </div>
+          </footer>
+        </div>
+      </Unauthenticated>
     </div>
   );
 }
@@ -77,7 +207,6 @@ function AuthRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    // Small delay to ensure sync process has started before mounting chat UI
     const timer = setTimeout(() => {
       router.push('/chat');
     }, 500);
@@ -86,9 +215,9 @@ function AuthRedirect() {
   }, [router]);
 
   return (
-    <div className="animate-in fade-in zoom-in flex max-w-2xl flex-col items-center gap-6 text-center duration-500">
-      <div className="border-primary h-12 w-12 animate-spin rounded-full border-4 border-t-transparent" />
-      <p className="text-muted-foreground text-lg">Entering the chat...</p>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-sky-400 border-t-transparent" />
+      <p className="text-sm text-slate-500 dark:text-slate-400">Entering the chat...</p>
     </div>
   );
 }

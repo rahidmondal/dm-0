@@ -6,7 +6,7 @@ export const syncUser = mutation({
   handler: async ctx => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new Error('Called syncUser without authentication present');
+      return null;
     }
 
     // Clerk's id is stored in the subject field

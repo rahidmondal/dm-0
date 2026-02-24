@@ -122,7 +122,7 @@ export function GroupSettingsModal({
   if (!isOpen) return null;
 
   const memberIdSet = new Set(groupMembers?.map(m => m._id));
-  const availableUsers = allUsers?.filter(u => !memberIdSet.has(u._id)) || [];
+  const availableUsers = allUsers?.page?.filter(u => !memberIdSet.has(u._id)) || [];
 
   return (
     <>

@@ -52,7 +52,7 @@ export function UserList({
   }
 
   // Client side filtering for immediate response
-  const filteredUsers = users.filter((user) => 
+  const filteredUsers = (users.page || []).filter((user) => 
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );

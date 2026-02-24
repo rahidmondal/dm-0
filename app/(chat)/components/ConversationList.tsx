@@ -85,18 +85,20 @@ export function ConversationList({ onStartGroup }: { onStartGroup: () => void })
                   isActive ? "bg-primary/15 shadow-sm scale-[0.98]" : "hover:bg-muted/60 focus-visible:bg-muted/60"
                 }`}
               >
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-muted shadow-sm border border-border/50">
-                  {chat.isGroup ? (
-                    <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary">
-                      <Users className="h-5 w-5" />
-                    </div>
-                  ) : chat.otherUser?.avatarUrl ? (
-                    <Image src={chat.otherUser.avatarUrl} alt={chat.otherUser.name || "User"} fill className="object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
-                      {chat.otherUser?.name?.charAt(0).toUpperCase() || "U"}
-                    </div>
-                  )}
+                <div className="relative shrink-0">
+                  <div className="relative h-12 w-12 overflow-hidden rounded-full bg-muted shadow-sm border border-border/50">
+                    {chat.isGroup ? (
+                      <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary">
+                        <Users className="h-5 w-5" />
+                      </div>
+                    ) : chat.otherUser?.avatarUrl ? (
+                      <Image src={chat.otherUser.avatarUrl} alt={chat.otherUser.name || "User"} fill className="object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
+                        {chat.otherUser?.name?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                    )}
+                  </div>
                   {!chat.isGroup && <OnlineIndicator userId={chat.otherUser?._id} />}
                 </div>
                 

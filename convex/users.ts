@@ -87,10 +87,14 @@ export const getUsers = query({
       throw new Error('Unauthenticated');
     }
 
-    // Get all users
-    const users = await ctx.db.query('users').collect();
+    // Pagination instead of collect to avoid N+1 and memory issues at scale
+    // This requires updating the frontend to handle pagination instead of a simple array
+    const users = await ctx.db.query('users').paginate({ numItems: 50, cursor: null });
 
     // Filter out the current user
-    return users.filter(user => user.clerkId !== identity.subject);
+    return {
+      ...users,
+      page: users.page.filter(user => user.clerkId !== identity.subject),
+    };
   },
 });

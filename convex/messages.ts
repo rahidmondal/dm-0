@@ -28,10 +28,12 @@ export const sendMessage = mutation({
 
     if (!membership) throw new Error('Not a member of this conversation');
 
+    const sanitizedContent = args.content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
     const messageId = await ctx.db.insert('messages', {
       conversationId: args.conversationId,
       senderId: currentUser._id,
-      content: args.content,
+      content: sanitizedContent,
       isDeleted: false,
     });
 

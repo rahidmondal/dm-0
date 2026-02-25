@@ -7,6 +7,7 @@ import { SignUpButton, SignInButton } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Zap, Shield, Users } from 'lucide-react';
+import AuthRedirect from '@/components/AuthRedirect';
 
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -203,21 +204,4 @@ export default function Home() {
   );
 }
 
-function AuthRedirect() {
-  const router = useRouter();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      router.push('/chat');
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [router]);
-
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-sky-400 border-t-transparent" />
-      <p className="text-sm text-slate-500 dark:text-slate-400">Entering the chat...</p>
-    </div>
-  );
-}

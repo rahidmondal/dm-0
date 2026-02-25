@@ -20,7 +20,7 @@ export default function Home() {
       <div className="absolute inset-0 -z-10 hidden h-full w-full [background:radial-gradient(125%_125%_at_50%_10%,#020617_40%,#63e_100%)] dark:block" />
 
       {/* Theme toggle — top right */}
-      <div className="absolute right-6 top-6 z-20">
+      <div className="absolute top-6 right-6 z-20">
         <ThemeToggle />
       </div>
 
@@ -34,13 +34,7 @@ export default function Home() {
               HERO
           ═══════════════════════════════════ */}
           <section className="flex min-h-screen flex-col items-center justify-center px-6 py-24 text-center">
-            <Image
-              src="/logo.svg"
-              alt="DM-0"
-              width={80}
-              height={80}
-              className="mb-6 rounded-2xl drop-shadow-lg"
-            />
+            <Image src="/logo.svg" alt="DM-0" width={80} height={80} className="mb-6 rounded-2xl drop-shadow-lg" />
 
             <h1 className="mb-4 text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl dark:text-white">
               DM-0
@@ -71,7 +65,17 @@ export default function Home() {
 
             {/* Scroll hint */}
             <div className="mt-16 animate-bounce text-slate-400 dark:text-slate-500">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M12 5v14M5 12l7 7 7-7" />
               </svg>
             </div>
@@ -82,9 +86,7 @@ export default function Home() {
           ═══════════════════════════════════ */}
           <section className="px-6 py-24">
             <div className="mx-auto max-w-4xl">
-              <h2 className="mb-4 text-center text-3xl font-bold text-slate-900 dark:text-white">
-                Why DM-0?
-              </h2>
+              <h2 className="mb-4 text-center text-3xl font-bold text-slate-900 dark:text-white">Why DM-0?</h2>
               <p className="mx-auto mb-12 max-w-lg text-center text-sm text-slate-500 dark:text-slate-400">
                 Built for speed, security, and simplicity.
               </p>
@@ -128,9 +130,7 @@ export default function Home() {
           ═══════════════════════════════════ */}
           <section className="px-6 py-16">
             <div className="mx-auto max-w-3xl">
-              <h2 className="mb-10 text-center text-2xl font-bold text-slate-900 dark:text-white">
-                Built With
-              </h2>
+              <h2 className="mb-10 text-center text-2xl font-bold text-slate-900 dark:text-white">Built With</h2>
 
               <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-medium text-slate-500 dark:text-slate-400">
                 {[
@@ -158,9 +158,7 @@ export default function Home() {
           ═══════════════════════════════════ */}
           <section className="px-6 py-24">
             <div className="mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white/70 p-10 text-center shadow-lg backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/70">
-              <h2 className="mb-3 text-2xl font-bold text-slate-900 dark:text-white">
-                Ready to start chatting?
-              </h2>
+              <h2 className="mb-3 text-2xl font-bold text-slate-900 dark:text-white">Ready to start chatting?</h2>
               <p className="mb-8 text-sm text-slate-500 dark:text-slate-400">
                 Join DM-0 and experience messaging the way it should be.
               </p>
@@ -184,11 +182,17 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-500">
-                <Link href="/terms-of-service" className="transition-colors hover:text-slate-600 dark:hover:text-slate-300">
+                <Link
+                  href="/terms-of-service"
+                  className="transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+                >
                   Terms of Service
                 </Link>
                 <span>·</span>
-                <Link href="/privacy-policy" className="transition-colors hover:text-slate-600 dark:hover:text-slate-300">
+                <Link
+                  href="/privacy-policy"
+                  className="transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+                >
                   Privacy Policy
                 </Link>
               </div>
@@ -203,5 +207,3 @@ export default function Home() {
     </div>
   );
 }
-
-

@@ -1,11 +1,29 @@
 'use client';
 
+import { useAuth } from '@clerk/nextjs';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
-import { useParams } from 'next/navigation';
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
+  const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
   const isChatActive = !!params?.conversationId;
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.replace('/');
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || !isSignedIn) {
+    return (
+      <div className="bg-background flex h-dvh w-full items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-sky-400 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background flex h-dvh w-full overflow-hidden">

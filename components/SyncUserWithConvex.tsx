@@ -11,7 +11,6 @@ export function SyncUserWithConvex() {
   const syncUser = useMutation(api.users.syncUser);
 
   useEffect(() => {
-
     if (!user || !isAuthenticated) return;
 
     const performSync = async () => {

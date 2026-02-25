@@ -31,6 +31,7 @@ pnpm dev
 ```
 
 Create a `.env.local` with:
+
 ```
 CONVEX_DEPLOYMENT=
 

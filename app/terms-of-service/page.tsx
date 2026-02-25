@@ -24,7 +24,7 @@ export default function TermsPage() {
       </header>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-2xl px-6 pb-16 pt-4">
+      <main className="mx-auto w-full max-w-2xl px-6 pt-4 pb-16">
         <div className="rounded-2xl border border-slate-200 bg-white/80 p-8 shadow-lg backdrop-blur-sm sm:p-10 dark:border-slate-800 dark:bg-slate-900/80">
           <h1 className="mb-2 text-3xl font-bold text-slate-900 dark:text-white">Terms of Service</h1>
           <p className="mb-8 text-sm text-slate-400">Last Updated: February 25, 2026 · Contact: admin@dm0.social</p>
@@ -40,14 +40,13 @@ export default function TermsPage() {
 
             <section>
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">2. Description of Service</h2>
-              <p>
-                DM-0 is a real-time messaging platform provided strictly for demonstration and portfolio purposes.
-              </p>
+              <p>DM-0 is a real-time messaging platform provided strictly for demonstration and portfolio purposes.</p>
               <p className="mt-2">
                 The Service is provided on an &quot;as is&quot; and &quot;as available&quot; basis.
               </p>
               <p className="mt-2">
-                We reserve the right to modify, suspend, restrict, or discontinue the Service at any time without notice.
+                We reserve the right to modify, suspend, restrict, or discontinue the Service at any time without
+                notice.
               </p>
             </section>
 
@@ -60,7 +59,7 @@ export default function TermsPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">4. User Responsibilities</h2>
               <p>You agree that you will:</p>
-              <ul className="ml-4 mt-2 list-disc space-y-1">
+              <ul className="mt-2 ml-4 list-disc space-y-1">
                 <li>Maintain the security of your account.</li>
                 <li>Use the Service only for lawful purposes.</li>
                 <li>Not upload or transmit harmful, abusive, defamatory, obscene, or illegal content.</li>
@@ -72,8 +71,10 @@ export default function TermsPage() {
 
             <section>
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">5. Account Termination</h2>
-              <p>We reserve the right to suspend or terminate your access at our sole discretion, without notice, if:</p>
-              <ul className="ml-4 mt-2 list-disc space-y-1">
+              <p>
+                We reserve the right to suspend or terminate your access at our sole discretion, without notice, if:
+              </p>
+              <ul className="mt-2 ml-4 list-disc space-y-1">
                 <li>You violate these Terms.</li>
                 <li>Your conduct harms other users.</li>
                 <li>Your conduct creates legal or technical risk.</li>
@@ -83,7 +84,8 @@ export default function TermsPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">6. Intellectual Property</h2>
               <p>
-                All software, branding, and design elements of DM-0 are the property of its creator unless otherwise stated.
+                All software, branding, and design elements of DM-0 are the property of its creator unless otherwise
+                stated.
               </p>
               <p className="mt-2">
                 You retain ownership of the content you send, but you grant DM-0 a limited, non-exclusive license to
@@ -95,7 +97,7 @@ export default function TermsPage() {
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">7. No Warranty</h2>
               <p>The Service is provided without warranties of any kind, whether express or implied.</p>
               <p className="mt-2">We make no guarantees regarding:</p>
-              <ul className="ml-4 mt-2 list-disc space-y-1">
+              <ul className="mt-2 ml-4 list-disc space-y-1">
                 <li>Uptime</li>
                 <li>Reliability</li>
                 <li>Data persistence</li>
@@ -107,10 +109,8 @@ export default function TermsPage() {
 
             <section>
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">8. Limitation of Liability</h2>
-              <p>
-                To the maximum extent permitted by applicable law, DM-0 and its creator shall not be liable for:
-              </p>
-              <ul className="ml-4 mt-2 list-disc space-y-1">
+              <p>To the maximum extent permitted by applicable law, DM-0 and its creator shall not be liable for:</p>
+              <ul className="mt-2 ml-4 list-disc space-y-1">
                 <li>Loss of data</li>
                 <li>Loss of profits</li>
                 <li>Indirect or consequential damages</li>
@@ -124,8 +124,8 @@ export default function TermsPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">9. Changes to Terms</h2>
               <p>
-                We may update these Terms at any time. Continued use of the Service after changes constitutes
-                acceptance of the revised Terms.
+                We may update these Terms at any time. Continued use of the Service after changes constitutes acceptance
+                of the revised Terms.
               </p>
             </section>
 

@@ -24,7 +24,7 @@ export default function PrivacyPage() {
       </header>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-2xl px-6 pb-16 pt-4">
+      <main className="mx-auto w-full max-w-2xl px-6 pt-4 pb-16">
         <div className="rounded-2xl border border-slate-200 bg-white/80 p-8 shadow-lg backdrop-blur-sm sm:p-10 dark:border-slate-800 dark:bg-slate-900/80">
           <h1 className="mb-2 text-3xl font-bold text-slate-900 dark:text-white">Privacy Policy</h1>
           <p className="mb-8 text-sm text-slate-400">Last Updated: February 25, 2026 · Contact: admin@dm0.social</p>
@@ -33,8 +33,8 @@ export default function PrivacyPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">1. Project Nature</h2>
               <p>
-                DM-0 is a portfolio and demonstration project created for educational and showcase purposes.
-                It is not intended for production or commercial deployment.
+                DM-0 is a portfolio and demonstration project created for educational and showcase purposes. It is not
+                intended for production or commercial deployment.
               </p>
               <p className="mt-2">
                 Users should not rely on DM-0 for confidential, business-critical, or long-term communication.
@@ -45,7 +45,9 @@ export default function PrivacyPage() {
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">2. Information We Collect</h2>
               <p>When you use DM-0, we may collect the following information:</p>
 
-              <h3 className="mt-4 mb-1 text-sm font-semibold text-slate-800 dark:text-slate-200">Account Information</h3>
+              <h3 className="mt-4 mb-1 text-sm font-semibold text-slate-800 dark:text-slate-200">
+                Account Information
+              </h3>
               <ul className="ml-4 list-disc space-y-1">
                 <li>Name</li>
                 <li>Email address</li>
@@ -70,7 +72,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">3. How We Use Information</h2>
               <p>Information collected is used solely to:</p>
-              <ul className="ml-4 mt-2 list-disc space-y-1">
+              <ul className="mt-2 ml-4 list-disc space-y-1">
                 <li>Authenticate users</li>
                 <li>Provide real-time messaging functionality</li>
                 <li>Display user profiles within the application</li>
@@ -82,8 +84,8 @@ export default function PrivacyPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">4. Third-Party Services</h2>
               <p>
-                DM-0 relies on third-party infrastructure and authentication providers to operate. These providers
-                may process limited data strictly as necessary to deliver their services.
+                DM-0 relies on third-party infrastructure and authentication providers to operate. These providers may
+                process limited data strictly as necessary to deliver their services.
               </p>
               <p className="mt-2">
                 Data handled by third-party services is subject to their respective privacy policies.
@@ -94,7 +96,7 @@ export default function PrivacyPage() {
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">5. Data Retention</h2>
               <p>Data is retained while your account remains active.</p>
               <p className="mt-2">However, as DM-0 is a demonstration project:</p>
-              <ul className="ml-4 mt-2 list-disc space-y-1">
+              <ul className="mt-2 ml-4 list-disc space-y-1">
                 <li>Data may be reset, modified, or permanently deleted at any time.</li>
                 <li>Long-term storage is not guaranteed.</li>
                 <li>Backup and recovery systems are not guaranteed.</li>
@@ -109,7 +111,7 @@ export default function PrivacyPage() {
               <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">6. Security</h2>
               <p>Reasonable technical measures are used to protect data in transit and during authentication.</p>
               <p className="mt-2">However:</p>
-              <ul className="ml-4 mt-2 list-disc space-y-1">
+              <ul className="mt-2 ml-4 list-disc space-y-1">
                 <li>DM-0 has not undergone formal security auditing.</li>
                 <li>It should not be used to store sensitive or confidential information.</li>
                 <li>No system can guarantee absolute security.</li>
@@ -117,9 +119,11 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">7. User Responsibilities Regarding Data</h2>
+              <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
+                7. User Responsibilities Regarding Data
+              </h2>
               <p>You agree not to upload, transmit, or store:</p>
-              <ul className="ml-4 mt-2 list-disc space-y-1">
+              <ul className="mt-2 ml-4 list-disc space-y-1">
                 <li>Financial information</li>
                 <li>Government-issued identification numbers</li>
                 <li>Passwords</li>

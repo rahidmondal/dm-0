@@ -39,7 +39,6 @@ export function TypingIndicator({
     };
   }, [hasAnyTyping]);
 
-  // For 1-on-1 chat
   if (!groupMembers) {
     const isTyping = typingUntil ? typingUntil > now : false;
     if (!isTyping) return null;
@@ -52,7 +51,6 @@ export function TypingIndicator({
     );
   }
 
-  // For group chat — find who's typing (exclude current user)
   const typingNames = groupMembers
     .filter(m => m.typingUntil && m.typingUntil > now && m.name)
     .filter(m => {

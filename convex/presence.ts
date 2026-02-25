@@ -1,12 +1,11 @@
-import { mutation, query, internalMutation } from './_generated/server';
 import { v } from 'convex/values';
+import { internalMutation, mutation, query } from './_generated/server';
 
-// Heartbeat mutation: Called by the client every 10-15 seconds
 export const heartbeat = mutation({
   args: { connectionId: v.string() },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return; // Ignore if unauthenticated
+    if (!identity) return;
 
     const user = await ctx.db
       .query('users')
@@ -15,7 +14,6 @@ export const heartbeat = mutation({
 
     if (!user) return;
 
-    // Check if the presence record for this connection exists
     const existing = await ctx.db
       .query('presence')
       .withIndex('by_userId_connectionId', q => q.eq('userId', user._id).eq('connectionId', args.connectionId))
@@ -57,11 +55,9 @@ export const removePresence = mutation({
   },
 });
 
-// Helper query to check if a specific user is online
 export const isUserOnline = query({
   args: { userId: v.id('users') },
   handler: async (ctx, args) => {
-    // A user is "online" if they have pinged within the last 30 seconds
     const threshold = Date.now() - 30000;
 
     const activePresence = await ctx.db
@@ -74,15 +70,11 @@ export const isUserOnline = query({
   },
 });
 
-// Internal mutation to sweep dead presence records, called by cron
 export const clearStalePresence = internalMutation({
   args: {},
   handler: async ctx => {
-    // Delete records older than 5 minutes
     const threshold = Date.now() - 5 * 60 * 1000;
 
-    // We don't have an index on just 'updatedAt', so we collect and filter.
-    // In a massive app you'd add an index, but for heartbeat cleanup this is fine.
     const staleRecords = await ctx.db
       .query('presence')
       .filter(q => q.lt(q.field('updatedAt'), threshold))

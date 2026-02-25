@@ -1,7 +1,7 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
 import { WifiOff } from 'lucide-react';
+import { useSyncExternalStore } from 'react';
 
 function subscribe(callback: () => void) {
   window.addEventListener('online', callback);
@@ -17,7 +17,7 @@ function getSnapshot() {
 }
 
 function getServerSnapshot() {
-  return true; // Always assume online during SSR
+  return true;
 }
 
 export function NetworkStatus() {

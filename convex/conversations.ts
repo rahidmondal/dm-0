@@ -1,5 +1,5 @@
-import { mutation, query } from './_generated/server';
 import { v } from 'convex/values';
+import { mutation, query } from './_generated/server';
 
 export const getOrCreateConversation = mutation({
   args: { otherUserId: v.id('users') },
@@ -18,11 +18,9 @@ export const getOrCreateConversation = mutation({
       throw new Error('Cannot create a conversation with yourself');
     }
 
-    // Sort IDs to ensure a consistent directKey
     const sortedIds = [currentUser._id, args.otherUserId].sort();
     const directKey = `${sortedIds[0]}_${sortedIds[1]}`;
 
-    // Check if conversation already exists
     const existing = await ctx.db
       .query('conversations')
       .withIndex('by_directKey', q => q.eq('directKey', directKey))
@@ -32,14 +30,12 @@ export const getOrCreateConversation = mutation({
       return existing._id;
     }
 
-    // Create new conversation
     const conversationId = await ctx.db.insert('conversations', {
       isGroup: false,
       directKey,
       updatedAt: Date.now(),
     });
 
-    // Create member entries
     await ctx.db.insert('members', {
       conversationId,
       userId: currentUser._id,
@@ -77,23 +73,19 @@ export const getMyConversations = query({
         const conversation = await ctx.db.get(membership.conversationId);
         if (!conversation) return null;
 
-        // Fetch the active members of this conversation
         const activeMembers = await ctx.db
           .query('members')
           .withIndex('by_conversationId', q => q.eq('conversationId', conversation._id))
           .collect();
 
-        // If it's a 1-on-1, find the other member
         let otherUser = null;
         if (!conversation.isGroup) {
           const otherMember = activeMembers.find(m => m.userId !== currentUser._id);
           otherUser = otherMember ? await ctx.db.get(otherMember.userId) : null;
         }
 
-        // Get preview of last message
         const lastMessage = conversation.lastMessageId ? await ctx.db.get(conversation.lastMessageId) : null;
 
-        // Calculate unread count (capped at 20 for performance)
         let unreadCount = 0;
         if (membership.lastReadMessageId) {
           const lastReadMsg = await ctx.db.get(membership.lastReadMessageId);
@@ -106,7 +98,6 @@ export const getMyConversations = query({
             unreadCount = newerMessages.length;
           }
         } else {
-          // If never read, count up to 20 messages
           const allMessages = await ctx.db
             .query('messages')
             .withIndex('by_conversationId', q => q.eq('conversationId', conversation._id))
@@ -170,7 +161,6 @@ export const getConversation = query({
       otherMember = activeMembers.find(m => m.userId !== currentUser._id) || null;
       otherUser = otherMember ? await ctx.db.get(otherMember.userId) : null;
     } else {
-      // For groups, map out all members to return their details
       groupMembers = await Promise.all(
         activeMembers.map(async m => {
           const user = await ctx.db.get(m.userId);
@@ -219,7 +209,6 @@ export const setTyping = mutation({
 
     if (!membership) return;
 
-    // Set typing status valid for the next 2 seconds
     await ctx.db.patch(membership._id, { typingUntil: Date.now() + 2000 });
   },
 });
@@ -278,15 +267,12 @@ export const createGroup = mutation({
       updatedAt: Date.now(),
     });
 
-    // Add the creator
     await ctx.db.insert('members', {
       conversationId,
       userId: currentUser._id,
     });
 
-    // Add all selected members
     for (const memberId of args.memberIds) {
-      // Prevent adding the creator twice if they somehow included their own ID
       if (memberId !== currentUser._id) {
         await ctx.db.insert('members', {
           conversationId,
@@ -317,19 +303,16 @@ export const deleteGroup = mutation({
       throw new Error('Group not found');
     }
 
-    // Only admin can delete the group
     if (conversation.adminId !== currentUser._id) {
       throw new Error('Only the group admin can delete this group');
     }
 
-    // 1. Delete all messages and their reactions
     const messages = await ctx.db
       .query('messages')
       .withIndex('by_conversationId', q => q.eq('conversationId', args.conversationId))
       .collect();
 
     for (const msg of messages) {
-      // Find and delete reactions for this specific message
       const reactions = await ctx.db
         .query('reactions')
         .withIndex('by_messageId', q => q.eq('messageId', msg._id))
@@ -339,11 +322,9 @@ export const deleteGroup = mutation({
         await ctx.db.delete(reaction._id);
       }
 
-      // Delete the message itself
       await ctx.db.delete(msg._id);
     }
 
-    // 2. Delete all memberships
     const activeMembers = await ctx.db
       .query('members')
       .withIndex('by_conversationId', q => q.eq('conversationId', args.conversationId))
@@ -353,7 +334,6 @@ export const deleteGroup = mutation({
       await ctx.db.delete(member._id);
     }
 
-    // 3. Delete the conversation itself
     await ctx.db.delete(args.conversationId);
   },
 });
@@ -435,14 +415,12 @@ export const leaveGroup = mutation({
       throw new Error('Not a member');
     }
 
-    // Admin cannot leave — must delete the group instead
     if (conversation.adminId === currentUser._id) {
       throw new Error('Admin cannot leave the group. Delete it instead.');
     }
 
     await ctx.db.delete(membership._id);
 
-    // Add system-like message indicating user left
     await ctx.db.insert('messages', {
       conversationId: args.conversationId,
       senderId: currentUser._id,

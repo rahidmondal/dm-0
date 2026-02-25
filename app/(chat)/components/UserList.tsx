@@ -1,11 +1,11 @@
 'use client';
 
-import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
+import { useMutation, useQuery } from 'convex/react';
+import { ArrowRight, Check, Loader2, Users, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Loader2, Users, Check, X, ArrowRight } from 'lucide-react';
 
 import { Id } from '@/convex/_generated/dataModel';
 import { OnlineIndicator } from './OnlineIndicator';
@@ -28,7 +28,6 @@ export function UserList({
   const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);
 
-  // Group Mode States
   const [selectedUserIds, setSelectedUserIds] = useState<Id<'users'>[]>([]);
   const [showGroupNameModal, setShowGroupNameModal] = useState(false);
   const [groupName, setGroupName] = useState('');
@@ -51,7 +50,6 @@ export function UserList({
     );
   }
 
-  // Client side filtering for immediate response
   const filteredUsers = (users.page || []).filter(
     user =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

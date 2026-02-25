@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { SidebarHeader } from './SidebarHeader';
-import { SearchBar } from './SearchBar';
-import { UserList } from './UserList';
 import { ConversationList } from './ConversationList';
+import { SearchBar } from './SearchBar';
+import { SidebarHeader } from './SidebarHeader';
+import { UserList } from './UserList';
 
 export function Sidebar() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,7 +15,6 @@ export function Sidebar() {
       <SidebarHeader />
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      {/* If searching or creating a group, show the user list. Otherwise, active conversations. */}
       {searchQuery.trim().length > 0 || isGroupMode ? (
         <UserList
           searchQuery={searchQuery}

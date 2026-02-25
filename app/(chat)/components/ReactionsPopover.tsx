@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Smile } from 'lucide-react';
-import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
+import { useMutation, useQuery } from 'convex/react';
+import { Smile } from 'lucide-react';
+import React, { useState } from 'react';
 
 const EMOJI_OPTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '👀', '🙌', '💯'];
 
@@ -23,7 +23,6 @@ export function ReactionsPopover({ messageId, reactions }: ReactionsPopoverProps
     toggleReaction({ messageId, emoji }).catch(console.error);
   };
 
-  // Close when clicking outside or pressing Escape
   const popoverRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -62,7 +61,7 @@ export function ReactionsPopover({ messageId, reactions }: ReactionsPopoverProps
       </button>
 
       {isOpen && (
-        <div className="bg-background border-border animate-in fade-in zoom-in-95 absolute bottom-full left-1/2 z-50 mb-2 flex w-[200px] -translate-x-1/2 flex-wrap items-center justify-center gap-1 rounded-2xl border p-2 shadow-xl duration-200">
+        <div className="bg-background border-border animate-in fade-in zoom-in-95 absolute bottom-full left-1/2 z-50 mb-2 flex w-50 -translate-x-1/2 flex-wrap items-center justify-center gap-1 rounded-2xl border p-2 shadow-xl duration-200">
           {EMOJI_OPTIONS.map(emoji => {
             const reactionData = reactions?.find(r => r.emoji === emoji);
             const hasReacted = currentUser && reactionData?.userIds.includes(currentUser._id);

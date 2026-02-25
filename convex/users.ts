@@ -8,7 +8,6 @@ export const syncUser = mutation({
       return null;
     }
 
-    // Clerk's id is stored in the subject field
     const clerkId = identity.subject;
 
     const existingUser = await ctx.db
@@ -21,7 +20,6 @@ export const syncUser = mutation({
 
     if (existingUser) {
       await ctx.db.patch(existingUser._id, {
-        // Always sync username from Clerk — Clerk is the single source of truth
         username,
         name,
         email: identity.email ?? '',
@@ -48,11 +46,8 @@ export const getUsers = query({
       throw new Error('Unauthenticated');
     }
 
-    // Pagination instead of collect to avoid N+1 and memory issues at scale
-    // This requires updating the frontend to handle pagination instead of a simple array
     const users = await ctx.db.query('users').paginate({ numItems: 50, cursor: null });
 
-    // Filter out the current user
     return {
       ...users,
       page: users.page.filter(user => user.clerkId !== identity.subject),

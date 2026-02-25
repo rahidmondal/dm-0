@@ -1,19 +1,19 @@
 'use client';
 
-import { useQuery, usePaginatedQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
-import Image from 'next/image';
-import { ChatInput } from './ChatInput';
 import { formatMessageTime } from '@/lib/utils';
-import { useEffect, useRef, useState } from 'react';
+import { useMutation, usePaginatedQuery, useQuery } from 'convex/react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Loader2, Trash2 } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { OnlineIndicator } from './OnlineIndicator';
-import { TypingIndicator } from './TypingIndicator';
-import { ReactionsPopover } from './ReactionsPopover';
+import { useEffect, useRef, useState } from 'react';
+import { ChatInput } from './ChatInput';
 import { GroupSettingsModal } from './GroupSettingsModal';
-import { motion, AnimatePresence } from 'framer-motion';
+import { OnlineIndicator } from './OnlineIndicator';
+import { ReactionsPopover } from './ReactionsPopover';
+import { TypingIndicator } from './TypingIndicator';
 export function ChatUI({ conversationId }: { conversationId: Id<'conversations'> }) {
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -36,7 +36,6 @@ export function ChatUI({ conversationId }: { conversationId: Id<'conversations'>
   const deleteMessage = useMutation(api.messages.deleteMessage);
   const toggleReaction = useMutation(api.messages.toggleReaction);
 
-  // Auto-scroll to bottom on new messages and mark read
   useEffect(() => {
     if (messages.length > 0) {
       const isInitialLoad = prevMessagesLength.current === 0;
@@ -44,7 +43,6 @@ export function ChatUI({ conversationId }: { conversationId: Id<'conversations'>
 
       prevMessagesLength.current = messages.length;
 
-      // Mark the latest message as read
       const latestMessage = messages[messages.length - 1];
       if (latestMessage) {
         markRead({ conversationId, messageId: latestMessage._id }).catch(console.error);
@@ -73,18 +71,16 @@ export function ChatUI({ conversationId }: { conversationId: Id<'conversations'>
     }
   };
 
-  // Mobile Long-Press State
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleTouchStart = (msgId: string) => {
     pressTimer.current = setTimeout(() => {
       setSelectedMessageId(msgId);
-      // Optional: Add haptic feedback if supported by browser
       if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(50);
       }
-    }, 400); // 400ms long press
+    }, 400);
   };
 
   const handleTouchEnd = () => {
@@ -189,7 +185,7 @@ export function ChatUI({ conversationId }: { conversationId: Id<'conversations'>
             <span className="text-foreground font-semibold">
               {conversation.isGroup ? conversation.name : conversation.otherUser?.name || 'Unknown User'}
             </span>
-            <span className="text-muted-foreground max-w-[200px] truncate text-xs sm:max-w-md">
+            <span className="text-muted-foreground max-w-50 truncate text-xs sm:max-w-md">
               {conversation.isGroup
                 ? `${conversation.groupMembers?.length || 0} members`
                 : `@${conversation.otherUser?.username || 'unknown'}`}
@@ -247,7 +243,6 @@ export function ChatUI({ conversationId }: { conversationId: Id<'conversations'>
               {messages.map((msg, index) => {
                 const isMe = msg.senderId === currentUser._id;
 
-                // Check if the previous message was from the same user to avoid redundant sender names
                 const prevMsg = index > 0 ? messages[index - 1] : null;
                 const showSenderName = conversation.isGroup && !isMe && (!prevMsg || prevMsg.senderId !== msg.senderId);
 
@@ -292,7 +287,6 @@ export function ChatUI({ conversationId }: { conversationId: Id<'conversations'>
                       onTouchEnd={handleTouchEnd}
                       onTouchCancel={handleTouchEnd}
                       onClick={e => {
-                        // Prevent click from reaching the parent container (which dismissed the actions)
                         if (selectedMessageId === msg._id) {
                           e.stopPropagation();
                         }
@@ -313,11 +307,11 @@ export function ChatUI({ conversationId }: { conversationId: Id<'conversations'>
                       {/* Action Buttons (Visible via selectedMessageId on mobile, or group-hover on desktop) */}
                       <div
                         className={`bg-background/80 dark:bg-card border-border/50 flex items-center gap-1 rounded-full border px-1 py-0.5 shadow-sm backdrop-blur-sm transition-opacity duration-200 ${
-                          selectedMessageId === msg._id || isMe === false /* Always allow hover on desktop */
+                          selectedMessageId === msg._id || isMe === false
                             ? 'z-10 opacity-100'
                             : 'opacity-0 group-hover:opacity-100'
                         } ${
-                          !isMe && selectedMessageId !== msg._id ? 'opacity-0 group-hover:opacity-100' : '' // Ensure logic applies to both
+                          !isMe && selectedMessageId !== msg._id ? 'opacity-0 group-hover:opacity-100' : ''
                         } ${isMe ? 'mr-1' : 'ml-1'}`}
                       >
                         {isMe && (

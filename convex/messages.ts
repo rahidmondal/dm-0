@@ -1,7 +1,7 @@
-import { mutation, query } from './_generated/server';
-import { v } from 'convex/values';
 import { paginationOptsValidator } from 'convex/server';
+import { v } from 'convex/values';
 import { Id } from './_generated/dataModel';
+import { mutation, query } from './_generated/server';
 
 export const sendMessage = mutation({
   args: {
@@ -37,7 +37,6 @@ export const sendMessage = mutation({
       isDeleted: false,
     });
 
-    // Update conversation last message and timestamp
     await ctx.db.patch(args.conversationId, {
       lastMessageId: messageId,
       updatedAt: Date.now(),
@@ -84,13 +83,11 @@ export const getMessages = query({
       messages.page.map(async msg => {
         const sender = await ctx.db.get(msg.senderId);
 
-        // Fetch reactions for this message
         const reactions = await ctx.db
           .query('reactions')
           .withIndex('by_messageId', q => q.eq('messageId', msg._id))
           .collect();
 
-        // Group reactions by emoji into an array to avoid invalid Convex field names
         const reactionMap = reactions.reduce(
           (acc, curr) => {
             if (!acc[curr.emoji]) {
@@ -168,7 +165,6 @@ export const toggleReaction = mutation({
     const message = await ctx.db.get(args.messageId);
     if (!message) throw new Error('Message not found');
 
-    // Check if user is member of this conversation
     const membership = await ctx.db
       .query('members')
       .withIndex('by_userId_and_conversationId', q =>
@@ -178,7 +174,6 @@ export const toggleReaction = mutation({
 
     if (!membership) throw new Error('Not authorized to react to this message');
 
-    // Check if the exact reaction already exists
     const existingReaction = await ctx.db
       .query('reactions')
       .withIndex('by_messageId_and_userId', q => q.eq('messageId', args.messageId).eq('userId', currentUser._id))
@@ -186,10 +181,8 @@ export const toggleReaction = mutation({
       .first();
 
     if (existingReaction) {
-      // Toggle off (remove)
       await ctx.db.delete(existingReaction._id);
     } else {
-      // Toggle on (add)
       await ctx.db.insert('reactions', {
         messageId: args.messageId,
         userId: currentUser._id,

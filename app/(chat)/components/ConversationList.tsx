@@ -101,9 +101,18 @@ export function ConversationList({ onStartGroup }: { onStartGroup: () => void })
                 <div className="relative shrink-0">
                   <div className="bg-muted border-border/50 relative h-12 w-12 overflow-hidden rounded-full border shadow-sm">
                     {chat.isGroup ? (
-                      <div className="bg-primary/10 text-primary flex h-full w-full items-center justify-center">
-                        <Users className="h-5 w-5" />
-                      </div>
+                      chat.avatarUrl ? (
+                        <Image
+                          src={chat.avatarUrl}
+                          alt={chat.name || 'Group'}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="bg-primary/10 text-primary flex h-full w-full items-center justify-center">
+                          <Users className="h-5 w-5" />
+                        </div>
+                      )
                     ) : chat.otherUser?.avatarUrl ? (
                       <Image
                         src={chat.otherUser.avatarUrl}

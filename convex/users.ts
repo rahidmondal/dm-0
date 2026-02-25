@@ -1,5 +1,4 @@
 import { mutation, query } from './_generated/server';
-import { v } from 'convex/values';
 
 export const syncUser = mutation({
   args: {},
@@ -17,12 +16,13 @@ export const syncUser = mutation({
       .withIndex('by_clerkId', q => q.eq('clerkId', clerkId))
       .unique();
 
-    const name = identity.name || identity.nickname || `user_${clerkId.slice(-5)}`;
-    const defaultUsername = identity.nickname || name.toLowerCase().replace(/\s+/g, '') || `user_${clerkId.slice(-5)}`;
+    const username = identity.nickname || `user_${clerkId.slice(-5)}`;
+    const name = identity.name || username;
 
     if (existingUser) {
       await ctx.db.patch(existingUser._id, {
-        // We purposefully DO NOT overwrite username here so custom usernames stick
+        // Always sync username from Clerk — Clerk is the single source of truth
+        username,
         name,
         email: identity.email ?? '',
         avatarUrl: identity.pictureUrl,
@@ -32,50 +32,11 @@ export const syncUser = mutation({
 
     return await ctx.db.insert('users', {
       clerkId,
-      username: defaultUsername,
+      username,
       name,
       email: identity.email ?? '',
       avatarUrl: identity.pictureUrl,
     });
-  },
-});
-
-export const updateUsername = mutation({
-  args: { username: v.string() },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error('Unauthenticated');
-    }
-
-    const user = await ctx.db
-      .query('users')
-      .withIndex('by_clerkId', q => q.eq('clerkId', identity.subject))
-      .unique();
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    // Strip whitespace and lower
-    const sanitizedUsername = args.username.toLowerCase().trim();
-
-    if (sanitizedUsername.length < 3) {
-      throw new Error('Username must be at least 3 characters');
-    }
-
-    // Additional check: ensure username isn't already taken by someone else
-    const existingUsername = await ctx.db
-      .query('users')
-      .withIndex('by_username', q => q.eq('username', sanitizedUsername))
-      .unique();
-
-    if (existingUsername && existingUsername._id !== user._id) {
-      throw new Error('Username is already taken');
-    }
-
-    await ctx.db.patch(user._id, { username: sanitizedUsername });
-    return sanitizedUsername;
   },
 });
 

@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import AuthRedirect from '@/components/AuthRedirect';
+import { SignInButton, SignUpButton } from '@clerk/nextjs';
 import { Authenticated, Unauthenticated } from 'convex/react';
-import { SignUpButton, SignInButton } from '@clerk/nextjs';
+import { Shield, Users, Zap } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Zap, Shield, Users } from 'lucide-react';
-import AuthRedirect from '@/components/AuthRedirect';
 
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -64,7 +62,11 @@ export default function Home() {
             </div>
 
             {/* Scroll hint */}
-            <div className="mt-16 animate-bounce text-slate-400 dark:text-slate-500">
+            <div
+              className="mt-16 animate-bounce cursor-pointer text-slate-400 transition-colors hover:text-sky-600 dark:text-slate-500 dark:hover:text-sky-400"
+              onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+              aria-label="Scroll down"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"

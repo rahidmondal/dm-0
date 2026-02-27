@@ -73,7 +73,7 @@ export const isUserOnline = query({
 export const clearStalePresence = internalMutation({
   args: {},
   handler: async ctx => {
-    const threshold = Date.now() - 5 * 60 * 1000;
+    const threshold = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
     const staleRecords = await ctx.db
       .query('presence')
